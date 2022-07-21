@@ -2,27 +2,29 @@
 #include<source_location>
 #include<exception>
 #include<sstream>
+#include<filesystem>
 
 class Exception : public std::exception
 {
+public:
+	using CALLPOINT = std::source_location;
 private:
 	std::string what_buffer;
 public:
-#if defined(_DEBUG)
-	Exception(const std::string& cause, std::source_location s = std::source_location::current())
+	Exception(const std::string& cause, CALLPOINT calling_point = CALLPOINT::current())
 	{
 		std::stringstream s_stream;
+#ifdef _DEBUG
 		s_stream << "WHAT : " << cause << '\n'
-			<< "THROWN FROM : " << s.file_name() << "\n"
-			<< "ON	: " << s.line();
+			<< "THROWN FROM : " << std::filesystem::path(calling_point.file_name()).filename() << '\n'
+			<< "FUNCTION : " << calling_point.function_name() << '\n'
+			<< "ON	: " << calling_point.line();
+
+#else
+		s_stream << cause;
+#endif
 		what_buffer = s_stream.str();
 	}
-#else
-	Exception(const std::string& cause)
-	{
-		what_buffer = cause;
-	}
-#endif
 	const char* what() const override
 	{
 		return what_buffer.c_str();
