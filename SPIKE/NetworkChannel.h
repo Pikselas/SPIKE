@@ -7,16 +7,19 @@
 
 class NetworkChannel
 {
+	friend class NetworkServer;
 private:
-	static unsigned int COUNT;
-protected:
-	NetworkChannel();
+	NetworkChannel(SOCKET s);
+public:
+	NetworkChannel(const NetworkChannel&) = delete;
+	NetworkChannel(NetworkChannel&& channel);
+	NetworkChannel& operator= (const NetworkChannel&) = delete;
+	NetworkChannel& operator= (NetworkChannel&& channel) noexcept;
 	~NetworkChannel();
 private:
-	SOCKET socket;
+	SOCKET CONNECTION_SOCKET;
 public:
 	void Send(const char * source , const unsigned int length);
-	void Send(const auto Iterable);
-	bool Receive(char * dest , const unsigned int amount);
+	std::optional<unsigned int> Receive(char * dest , const unsigned int amount);
 	void Disconnect();
 };

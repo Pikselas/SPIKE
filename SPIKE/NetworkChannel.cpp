@@ -1,51 +1,48 @@
 #include "NetworkChannel.h"
 
-unsigned int NetworkChannel::COUNT = 0;
+NetworkChannel::NetworkChannel(SOCKET s) : CONNECTION_SOCKET(s)
+{}
 
-NetworkChannel::NetworkChannel()
+NetworkChannel::NetworkChannel(NetworkChannel&& channel)
 {
-	if (++COUNT == 1)
+	*this = std::move(channel);
+}
+
+NetworkChannel& NetworkChannel::operator=(NetworkChannel&& channel) noexcept
+{
+	if (CONNECTION_SOCKET != INVALID_SOCKET)
 	{
-		WSADATA wdt;
-		if (auto res = WSAStartup(MAKEWORD(2, 2), &wdt);res != 0)
-		{
-			throw NetworkException(res);
-		}
+		Disconnect();
 	}
+	CONNECTION_SOCKET = channel.CONNECTION_SOCKET;
+	channel.CONNECTION_SOCKET = INVALID_SOCKET;
+	return *this;
 }
 
 NetworkChannel::~NetworkChannel()
 {
-	if (--COUNT == 0)
-	{
-		WSACleanup();
-	}
+	Disconnect();
 }
 
 void NetworkChannel::Send(const char* source, const unsigned int length)
 {
-	NETWORK_ERROR_IF_FAILED(send(socket, source, length , 0));
+	NETWORK_ERROR_IF_FAILED(send(CONNECTION_SOCKET, source, length , 0));
 }
 
-void NetworkChannel::Send(const auto Iterable)
+std::optional<unsigned int> NetworkChannel::Receive(char* dest, const unsigned int amount)
 {
-	NETWORK_ERROR_IF_FAILED(send(socket, &Iterable[0], Iterable.size()));
-}
-
-bool NetworkChannel::Receive(char* dest, const unsigned int amount)
-{
-	auto Res = recv(socket, dest, amount, 0);
+	auto Res = recv(CONNECTION_SOCKET, dest, amount, 0);
 	NETWORK_ERROR_IF_FAILED(Res);
 	if (Res > 0)
 	{
-		return true;
+		return Res;
 	}
-	return false;
+	return {};
 }
 
 void NetworkChannel::Disconnect()
 {
-	shutdown(socket, SD_BOTH);
-	closesocket(socket);
-	socket = INVALID_SOCKET;
+	shutdown(CONNECTION_SOCKET, SD_BOTH);
+	closesocket(CONNECTION_SOCKET);
+	CONNECTION_SOCKET = INVALID_SOCKET;
 }

@@ -12,4 +12,4 @@ public:
 	{}
 };
 
-#define NETWORK_ERROR_IF_FAILED(func_call) if(const int res = func_call; res == SOCKET_ERROR) throw NetworkException(WSAGetLastError())
+#define NETWORK_ERROR_IF_FAILED(code) if(code == SOCKET_ERROR) throw NetworkException(WSAGetLastError())

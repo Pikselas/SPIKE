@@ -1,14 +1,18 @@
 #include <iostream>
-#include"NetworkChannel.h"
 #include<vector>
 
+#include"NetworkServer.h"
 int main()
 {
-    std::vector<char> v;
- 
-    for (auto i = 0 ; i < v.size() ; ++i)
+    try
     {
-        std::cout << v.data()[i];
+        NetworkServer ns("1234");
+        std::vector<char> vc(100, 'c');
+       
+    }
+    catch (const Exception& e)
+    {
+        std::cerr << e.what();
     }
     return 0;
 }
