@@ -34,7 +34,7 @@ NetworkChannel NetworkServer::GetChannel()
     auto s = accept(LISTEN_SOCKET, nullptr, nullptr);
     if (s != INVALID_SOCKET)
     {
-        return NetworkChannel(accept(LISTEN_SOCKET, nullptr, nullptr));
+        return NetworkChannel(s);
     }
     else
     {
