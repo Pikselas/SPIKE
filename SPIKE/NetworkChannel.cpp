@@ -3,17 +3,13 @@
 NetworkChannel::NetworkChannel(SOCKET s) : CONNECTION_SOCKET(s)
 {}
 
-NetworkChannel::NetworkChannel(NetworkChannel&& channel)
+NetworkChannel::NetworkChannel(NetworkChannel&& channel) noexcept
 {
 	*this = std::move(channel);
 }
 
 NetworkChannel& NetworkChannel::operator=(NetworkChannel&& channel) noexcept
 {
-	if (CONNECTION_SOCKET != INVALID_SOCKET)
-	{
-		Disconnect();
-	}
 	CONNECTION_SOCKET = channel.CONNECTION_SOCKET;
 	channel.CONNECTION_SOCKET = INVALID_SOCKET;
 	return *this;

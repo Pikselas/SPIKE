@@ -12,7 +12,7 @@ private:
 	NetworkChannel(SOCKET s);
 public:
 	NetworkChannel(const NetworkChannel&) = delete;
-	NetworkChannel(NetworkChannel&& channel);
+	NetworkChannel(NetworkChannel&& channel) noexcept;
 	NetworkChannel& operator= (const NetworkChannel&) = delete;
 	NetworkChannel& operator= (NetworkChannel&& channel) noexcept;
 	~NetworkChannel();
