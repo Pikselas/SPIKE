@@ -53,5 +53,8 @@
     <ClInclude Include="HttpHeaders.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ParserTools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
