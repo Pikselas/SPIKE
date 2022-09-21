@@ -6,7 +6,12 @@ int main()
 {
     try
     {
-      HttpServer("3456");
+      HttpServer server("3456");
+      server.OnPath("/hell", [](auto& req, auto& res)
+          {
+              res.SendString("Hello World");
+          });
+      server.Serve();
     }
     catch (const Exception& e)
     {
