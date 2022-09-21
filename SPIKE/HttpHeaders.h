@@ -19,4 +19,12 @@ public:
 		}
 		return std::nullopt;
 	}
+	auto& getInlineMap()
+	{
+		return hashmap;
+	}
+	const auto& getInlineMap() const
+	{
+		return hashmap;
+	}
 };
