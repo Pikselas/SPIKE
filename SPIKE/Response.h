@@ -1,18 +1,44 @@
 #pragma once
 #include<functional>
 #include"HttpHeaders.h"
+
 class Response
 {
-public:
-	using ResponseWriterType = std::function<void(const char*, const size_t len)>;
+protected:
+	const float version;
+protected:
+	using ResponseWriterType = std::function<void(const char*, const unsigned int len)>;
 public:
 	HttpHeaders HEADERS;
 public:
-	ResponseWriterType response_writer;
-public:
-	Response(ResponseWriterType writer) : response_writer(writer) {}
-	void SendString(const std::string& str) const
+	enum class RESPONSE_TYPE
 	{
-		response_writer(str.c_str(), str.length());
+		OK = 200,
+		NOT_FOUND = 404
+	};
+public:
+	RESPONSE_TYPE RESPONSE_CODE = RESPONSE_TYPE::OK;
+public:
+	const static std::unordered_map<unsigned int, std::string> RESPONSE_CODES;
+protected:
+	ResponseWriterType write_response;
+protected:
+	void SendHeaders()
+	{
+		std::stringstream stream;
+		stream << "HTTP/" << version << ' ' << static_cast<unsigned int>(RESPONSE_CODE) << ' ' << RESPONSE_CODES.at(static_cast<unsigned int>(RESPONSE_CODE)) << "\r\n";
+		stream << HEADERS.getRaw() << "\r\n";
+		auto str = stream.str();
+		write_response(str.c_str(), str.length());
+	}
+public:
+	Response(ResponseWriterType writer , const float version) : write_response(writer) , version(version) {}
+	void SendString(const std::string& str)
+	{
+		HEADERS.Set("Content-Length", std::to_string(str.length()));
+		SendHeaders();
+		write_response(str.c_str(), static_cast<unsigned int>(str.length()));
 	}
 };
+
+const std::unordered_map<unsigned int, std::string> Response::RESPONSE_CODES = { {200 , "OK"} , {404 , "OK"}};

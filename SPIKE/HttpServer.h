@@ -10,8 +10,8 @@ class HttpServer
 {
 	using PATH_FUNCTION_T = std::function<void(Request&, Response&)>;
 	using PATH_FUNCTION_MAP_T = std::unordered_map<std::string , PATH_FUNCTION_T>;
-private:
-	constexpr static float VERSION = 1.1;
+public:
+	constexpr static float VERSION = 1.1f;
 private:
 	NetworkServer SERVER;
 private:
@@ -42,7 +42,7 @@ private:
 						path_func = res->second;
 					}
 					request = std::make_unique<Request>(hp.getPath(),hp.getRequestMethod(), hp.getHeaders());
-					response = std::make_unique<Response>([this](const char* str, const size_t len) { CHANNEL.Send(str, len); });
+					response = std::make_unique<Response>([this](const char* str, const size_t len) { CHANNEL.Send(str, len); },VERSION);
 					break;
 				}
 				else
@@ -56,6 +56,12 @@ private:
 			{
 				path_func(*request, *response);
 			}
+			else
+			{
+				response->RESPONSE_CODE = Response::RESPONSE_TYPE::NOT_FOUND;
+				response->SendString("Not Found");
+			}
+
 		}
 	};
 public:
@@ -68,7 +74,7 @@ public:
 	{
 		while (true)
 		{
-			std::thread(Handler{ SERVER.GetChannel() }, PATH_FUNCTIONS).detach();
+			std::thread(Handler{ SERVER.GetChannel() }, std::ref(PATH_FUNCTIONS)).detach();
 		}
 	}
 };
