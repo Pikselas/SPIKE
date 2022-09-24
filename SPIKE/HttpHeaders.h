@@ -1,6 +1,7 @@
 #pragma once
 #include<string>
 #include<optional>
+#include<sstream>
 #include<unordered_map>
 class HttpHeaders
 {
@@ -26,5 +27,14 @@ public:
 	const auto& getInlineMap() const
 	{
 		return hashmap;
+	}
+	std::string getRaw() const
+	{
+		std::stringstream stream;
+		for (const auto& key_val : hashmap)
+		{
+			stream << key_val.first << ':' << key_val.second << ";\r\n";
+		}
+		return stream.str();
 	}
 };
