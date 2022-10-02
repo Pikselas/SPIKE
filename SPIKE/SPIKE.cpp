@@ -6,19 +6,11 @@ int main()
     try
     {
       HttpServer server("3456");
-      server.OnPath("/hell", [](auto& req, auto& res)
-          {
-              res.SendString("Hello World");
-          });
-      server.OnPath("/ok", [](auto& req, auto& res) 
-          {
-              std::stringstream stream;
-              stream << "<html>"
-                  << "<body>"
-                  << R"(<input type= "text" >)"
-                  << "</body>"
-                  << "</html>";
-              res.SendString(stream.str());
+      server.OnPath("/", [](auto& req, auto& res) {
+          
+          res.SendString("Hello World");
+          res.SendString("Another Hello");
+
           });
       server.Serve();
     }

@@ -1,6 +1,7 @@
 #pragma once
 #include<functional>
 #include"HttpHeaders.h"
+#include"ResponseLocker.h"
 
 class Response
 {
@@ -23,6 +24,8 @@ public:
 protected:
 	ResponseWriterType write_response;
 protected:
+	ResponseLocker locker;
+protected:
 	void SendHeaders()
 	{
 		std::stringstream stream;
@@ -33,8 +36,9 @@ protected:
 	}
 public:
 	Response(ResponseWriterType writer , const float version) : write_response(writer) , version(version) {}
-	void SendString(const std::string& str)
+	void SendString(const std::string& str , std::source_location cp = std::source_location::current())
 	{
+		locker.Lock(cp);
 		HEADERS.Set("Content-Length", std::to_string(str.length()));
 		SendHeaders();
 		write_response(str.c_str(), static_cast<unsigned int>(str.length()));

@@ -6,6 +6,7 @@
 #include"HeadParser.h"
 #include"Request.h"
 #include"Response.h"
+#include"HttpException.h"
 class HttpServer
 {
 	using PATH_FUNCTION_T = std::function<void(Request&, Response&)>;
@@ -54,7 +55,14 @@ private:
 			}
 			if (path_func)
 			{
-				path_func(*request, *response);
+				try
+				{
+					path_func(*request, *response);
+				}
+				catch (const HttpException& e)
+				{
+					std::cerr << e.what();
+				}
 			}
 			else
 			{

@@ -139,6 +139,7 @@
   <ItemGroup>
     <ClInclude Include="Exception.h" />
     <ClInclude Include="HeadParser.h" />
+    <ClInclude Include="HttpException.h" />
     <ClInclude Include="HttpHeaders.h" />
     <ClInclude Include="HttpServer.h" />
     <ClInclude Include="NetworkChannel.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="ParserTools.h" />
     <ClInclude Include="Request.h" />
     <ClInclude Include="Response.h" />
+    <ClInclude Include="ResponseLocker.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
