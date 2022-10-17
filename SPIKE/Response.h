@@ -1,8 +1,9 @@
 #pragma once
 #include<functional>
-#include"OutStringStream.h"
 #include"HttpHeaders.h"
 #include"ResponseLocker.h"
+#include"OutStringStream.h"
+#include"OutRawStream.h"
 
 class Response
 {
@@ -25,6 +26,12 @@ protected:
 public:
 	std::unique_ptr<OutStream> Body;
 public:
+	void SendRaw(std::span<const char> raw , std::source_location cp = std::source_location::current())
+	{
+		locker.Lock(cp);
+		HEADERS.Set("Contet-Length", std::to_string(raw.size()));
+		Body = std::make_unique<OutRawStream>(raw);
+	}
 	void SendString(const std::string& str , std::source_location cp = std::source_location::current())
 	{
 		locker.Lock(cp);

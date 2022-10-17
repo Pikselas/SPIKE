@@ -15,7 +15,7 @@ public:
 		state = STATE::GOOD;
 		s << stream.str();
 	}
-	unsigned int Read(std::span<char> buffer)
+	unsigned int Read(std::span<char> buffer) override
 	{
 		if (s.good())
 		{

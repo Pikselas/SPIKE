@@ -9,10 +9,10 @@ int main()
     {
       HttpServer server("3456");
       server.OnPath("/", [](auto& req, auto& res) {
-          
-          res.SendString("Hello World");
-          res.SendString("Another Hello");
 
+          std::string ss = "Hello Hurry To World";
+          res.SendRaw(ss);
+          
           });
       server.Serve();
     }

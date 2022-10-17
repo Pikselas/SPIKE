@@ -74,5 +74,8 @@
     <ClInclude Include="OutStringStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OutRawStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

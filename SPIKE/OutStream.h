@@ -11,7 +11,10 @@ public:
 protected:
 	STATE state = STATE::EMPTY;
 public:
-	virtual unsigned int Read(std::span<char> buffer) = 0;
+	virtual unsigned int Read(std::span<char> buffer) 
+	{ 
+		return 0; 
+	}
 	STATE State()
 	{
 		return state;

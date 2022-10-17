@@ -146,6 +146,7 @@
     <ClInclude Include="NetworkException.h" />
     <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="NetworkServer.h" />
+    <ClInclude Include="OutRawStream.h" />
     <ClInclude Include="OutStream.h" />
     <ClInclude Include="OutStringStream.h" />
     <ClInclude Include="ParserTools.h" />

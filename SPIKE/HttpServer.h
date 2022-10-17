@@ -45,6 +45,7 @@ private:
 					}
 					request = std::make_unique<Request>(hp.getPath(),hp.getRequestMethod(), hp.getHeaders());
 					response = std::make_unique<Response>();
+					response->Body = std::make_unique<OutStream>();
 					break;
 				}
 				else
@@ -84,7 +85,7 @@ private:
 			while (response->Body->State() != OutStream::STATE::EMPTY)
 			{
 				auto count = response->Body->Read(buffer);
-				CHANNEL.Send(buffer.data(), buffer.size());
+				CHANNEL.Send(buffer.data(), count);
 			}
 		}
 	};
