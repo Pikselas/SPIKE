@@ -68,5 +68,11 @@
     <ClInclude Include="ResponseLocker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OutStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OutStringStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

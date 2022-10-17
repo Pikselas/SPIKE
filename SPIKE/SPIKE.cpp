@@ -1,4 +1,6 @@
 #include <iostream>
+#include<span>
+#include<ranges>
 #include"HttpServer.h"
 
 int main()

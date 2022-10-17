@@ -2,6 +2,7 @@
 #include<vector>
 #include<thread>
 #include<unordered_map>
+#include<array>
 #include"NetworkServer.h"
 #include"HeadParser.h"
 #include"Request.h"
@@ -43,7 +44,7 @@ private:
 						path_func = res->second;
 					}
 					request = std::make_unique<Request>(hp.getPath(),hp.getRequestMethod(), hp.getHeaders());
-					response = std::make_unique<Response>([this](const char* str, const size_t len) { CHANNEL.Send(str, len); },VERSION);
+					response = std::make_unique<Response>();
 					break;
 				}
 				else
@@ -61,7 +62,7 @@ private:
 				}
 				catch (const HttpException& e)
 				{
-					std::cerr << e.what();
+					response->Body = std::make_unique<OutStringStream>(e.what());
 				}
 			}
 			else
@@ -69,7 +70,20 @@ private:
 				response->RESPONSE_CODE = Response::RESPONSE_TYPE::NOT_FOUND;
 				response->SendString("Not Found");
 			}
-
+			//empty scope
+			{
+				std::stringstream stream;
+				stream << "HTTP/" << VERSION << ' ' << static_cast<unsigned int>(response->RESPONSE_CODE) << ' ' << Response::RESPONSE_CODES.at(static_cast<unsigned int>(response->RESPONSE_CODE)) << "\r\n";
+				stream << response->HEADERS.getRaw() << "\r\n";
+				auto str = stream.str();
+				CHANNEL.Send(str.c_str(), str.size());
+			}
+			std::array<char , 50000> buffer;
+			while (response->Body->State() != OutStream::STATE::EMPTY)
+			{
+				auto count = response->Body->Read(buffer);
+				CHANNEL.Send(buffer.data(), buffer.size());
+			}
 		}
 	};
 public:
