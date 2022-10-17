@@ -29,4 +29,8 @@ public:
 	{
 		return what_buffer.c_str();
 	}
+	unsigned int Length() const
+	{
+		return what_buffer.length();
+	}
 };

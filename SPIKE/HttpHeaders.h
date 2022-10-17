@@ -20,6 +20,10 @@ public:
 		}
 		return std::nullopt;
 	}
+	void Reset()
+	{
+		hashmap.clear();
+	}
 	auto& getInlineMap()
 	{
 		return hashmap;

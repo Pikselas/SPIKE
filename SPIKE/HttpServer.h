@@ -62,6 +62,8 @@ private:
 				}
 				catch (const HttpException& e)
 				{
+					response->HEADERS.Reset();
+					response->HEADERS.Set("Content-Length", std::to_string(e.Length()));
 					response->Body = std::make_unique<OutStringStream>(e.what());
 				}
 			}
@@ -78,7 +80,7 @@ private:
 				auto str = stream.str();
 				CHANNEL.Send(str.c_str(), str.size());
 			}
-			std::array<char , 50000> buffer;
+			std::vector<char> buffer(50000);
 			while (response->Body->State() != OutStream::STATE::EMPTY)
 			{
 				auto count = response->Body->Read(buffer);
