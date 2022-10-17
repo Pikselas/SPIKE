@@ -10,8 +10,7 @@ int main()
       HttpServer server("3456");
       server.OnPath("/", [](auto& req, auto& res) {
 
-          std::string ss = "Hello Hurry To World";
-          res.SendRaw(ss);
+          res.SendFile(R"(C:\Users\Aritra Maji\Downloads\Video\MIDV-216.mp4)");
           
           });
       server.Serve();

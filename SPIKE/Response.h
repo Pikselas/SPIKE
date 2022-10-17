@@ -3,6 +3,7 @@
 #include"HttpHeaders.h"
 #include"ResponseLocker.h"
 #include"OutStringStream.h"
+#include"OutFileStream.h"
 #include"OutRawStream.h"
 
 class Response
@@ -37,6 +38,12 @@ public:
 		locker.Lock(cp);
 		HEADERS.Set("Content-Length", std::to_string(str.length()));
 		Body = std::make_unique<OutStringStream>(str);
+	}
+	void SendFile(const std::filesystem::path& path , std::source_location cp = std::source_location::current())
+	{
+		locker.Lock(cp);
+		HEADERS.Set("Content-Length", std::to_string(std::filesystem::file_size(path)));
+		Body = std::make_unique<OutFileStream>(path);
 	}
 };
 

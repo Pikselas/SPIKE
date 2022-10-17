@@ -11,6 +11,7 @@ public:
 protected:
 	STATE state = STATE::EMPTY;
 public:
+	virtual ~OutStream(){}
 	virtual unsigned int Read(std::span<char> buffer) 
 	{ 
 		return 0; 

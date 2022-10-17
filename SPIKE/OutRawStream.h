@@ -10,7 +10,7 @@ public:
 	{
 		state = STATE::GOOD;
 	}
-	virtual unsigned int Read(std::span<char> buffer) override
+	unsigned int Read(std::span<char> buffer) override
 	{
 		auto copyCount = (std::min)(buffer.size(), buff.size());
 		std::copy_n(buff.begin(), copyCount, buffer.begin());
