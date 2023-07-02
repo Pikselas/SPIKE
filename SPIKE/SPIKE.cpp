@@ -8,10 +8,32 @@ int main()
     try
     {
       HttpServer server("3456");
-      server.OnPath("/", [](auto& req, auto& res) {
+      server.OnPath("/", [](Request& req, Response& res) {
 
-          res.SendFile(R"(C:\Users\Aritra Maji\Downloads\Video\MIDV-216.mp4)");
+          res.SendFile(R"(D:\l\retro.jpg)");
+
+          });
+      server.OnPath("/test", [](Request& req, Response& res) {
           
+          if (req.METHOD == "GET")
+          {
+			  res.SendString("Hello World!");
+		  }
+          else if (req.METHOD == "POST")
+          {
+			  std::vector<char> buff(100);
+              std::stringstream stream;
+              stream << "RECEIVED::";
+              while (auto read_size = req.ReadBody(buff))
+              {
+                  stream << std::string_view(buff.data(), *read_size);
+                  auto str = stream.str();
+                  OutputDebugStringA(str.c_str());
+                  if (str.find("\r\n\r\n") != std::string::npos)
+					  break;
+			  }
+              res.SendString(stream.str());
+          }
           });
       server.Serve();
     }

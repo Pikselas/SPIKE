@@ -8,6 +8,7 @@
 #include"Request.h"
 #include"Response.h"
 #include"HttpException.h"
+
 class HttpServer
 {
 	using PATH_FUNCTION_T = std::function<void(Request&, Response&)>;
@@ -38,9 +39,30 @@ private:
 				std::unique_ptr<Response> response;
 				while (auto recv_stat = CHANNEL.Receive(raw_point, 100))
 				{
-					if (auto fnd_pos = std::search(buff.rbegin(), buff.rend(), END_OF_SECTION.rbegin(), END_OF_SECTION.rend()); fnd_pos != buff.rend())
+
+					// Optimize this search 
+					// Keep track of how much data was last searched
+					// and search only the new data that was received - length of END_OF_SECTION
+
+					if (auto fnd_pos = std::search(buff.begin(), buff.end(), END_OF_SECTION.begin(), END_OF_SECTION.end()); fnd_pos != buff.end())
 					{
-						HeadParser hp(buff.begin(), fnd_pos.base() - END_OF_SECTION.length());
+						HeadParser hp(buff.begin(), fnd_pos - END_OF_SECTION.length());
+						auto fnd_dist = (fnd_pos - buff.begin());
+						
+						OutputDebugString(buff.data());
+						
+						buff.erase(buff.begin(), fnd_pos);
+
+						auto sz = buff.size();
+						sz += 1;
+						OutputDebugString(buff.data());
+
+						buff.resize(size_to_skip + *recv_stat - fnd_dist);
+						
+						sz = buff.size();
+						sz += 1;
+						OutputDebugString(buff.data());
+
 						if (auto res = func_map.find(hp.getPath()); res != func_map.end())
 						{
 							path_func = res->second;
@@ -57,6 +79,17 @@ private:
 						raw_point = buff.data() + size_to_skip;
 					}
 				}
+				request->reader = [&](std::span<char> Inpbuff) ->std::optional<unsigned int>
+				{
+					if (buff.size() > 0)
+					{
+						auto copy_size = min(Inpbuff.size(), buff.size());
+						std::copy_n(buff.begin(), copy_size, Inpbuff.begin());
+						buff.erase(buff.begin(), buff.begin() + copy_size);
+						return static_cast<unsigned int>(copy_size);
+					}
+					return CHANNEL.Receive(Inpbuff.data(), Inpbuff.size());
+				};
 				if (path_func)
 				{
 					try

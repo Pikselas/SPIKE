@@ -3,6 +3,7 @@
 #include<WS2tcpip.h>
 #include<optional>
 #include"NetworkException.h"
+
 #pragma comment (lib, "Ws2_32.lib")
 
 class NetworkChannel
