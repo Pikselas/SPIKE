@@ -30,44 +30,36 @@ private:
 		{
 			try
 			{
-				std::string END_OF_SECTION = "\r\n\r\n";
+				std::string_view END_OF_SECTION = "\r\n\r\n";
 				std::vector<char> buff(100);
 				auto raw_point = buff.data();
 				auto size_to_skip = 0u;
 				PATH_FUNCTION_T path_func = nullptr;
 				std::unique_ptr<Request> request;
 				std::unique_ptr<Response> response;
+				std::span<char> body_span;
 				while (auto recv_stat = CHANNEL.Receive(raw_point, 100))
 				{
 
-					// Optimize this search 
-					// Keep track of how much data was last searched
-					// and search only the new data that was received - length of END_OF_SECTION
+					auto search_pos_start = buff.begin() + std::clamp((long) size_to_skip - (long) END_OF_SECTION.size() ,(long) 0 , (long)buff.size());
+					auto search_pos_end = buff.begin() + size_to_skip + *recv_stat;
 
-					if (auto fnd_pos = std::search(buff.begin(), buff.end(), END_OF_SECTION.begin(), END_OF_SECTION.end()); fnd_pos != buff.end())
+					if (auto fnd_pos = std::search(search_pos_start , search_pos_end , END_OF_SECTION.begin(), END_OF_SECTION.end()); fnd_pos != buff.end())
 					{
-						HeadParser hp(buff.begin(), fnd_pos - END_OF_SECTION.length());
-						auto fnd_dist = (fnd_pos - buff.begin());
-						
-						OutputDebugString(buff.data());
-						
-						buff.erase(buff.begin(), fnd_pos);
+						HeadParser hp(buff.begin(), fnd_pos);
 
-						auto sz = buff.size();
-						sz += 1;
-						OutputDebugString(buff.data());
-
-						buff.resize(size_to_skip + *recv_stat - fnd_dist);
-						
-						sz = buff.size();
-						sz += 1;
-						OutputDebugString(buff.data());
+						body_span = std::span<char>(fnd_pos + END_OF_SECTION.size(), search_pos_end);
 
 						if (auto res = func_map.find(hp.getPath()); res != func_map.end())
 						{
 							path_func = res->second;
 						}
-						request = std::make_unique<Request>(hp.getPath(), hp.getRequestMethod(), hp.getHeaders());
+						unsigned int size = 0;
+						if (auto sz = hp.getHeaders().Get("Content-Length"))
+						{
+							size = std::stoi(*sz);
+						}
+						request = std::make_unique<Request>(hp.getPath(), hp.getRequestMethod(), hp.getHeaders() , size);
 						response = std::make_unique<Response>();
 						response->Body = std::make_unique<OutStream>();
 						break;
@@ -79,16 +71,25 @@ private:
 						raw_point = buff.data() + size_to_skip;
 					}
 				}
-				request->reader = [&](std::span<char> Inpbuff) ->std::optional<unsigned int>
+				request->reader = [& , size_left = request->BODY_SIZE](std::span<char> Inpbuff) mutable ->std::optional<unsigned int>
 				{
-					if (buff.size() > 0)
+					if (size_left > 0)
 					{
-						auto copy_size = min(Inpbuff.size(), buff.size());
-						std::copy_n(buff.begin(), copy_size, Inpbuff.begin());
-						buff.erase(buff.begin(), buff.begin() + copy_size);
-						return static_cast<unsigned int>(copy_size);
+						if (body_span.size() > 0)
+						{
+							auto copy_size = min(Inpbuff.size(), body_span.size());
+							std::copy_n(body_span.begin(), copy_size, Inpbuff.begin());
+							body_span = body_span.subspan(copy_size);
+							size_left -= copy_size;
+							return static_cast<unsigned int>(copy_size);
+						}
+						if (auto recv_stat = CHANNEL.Receive(Inpbuff.data(), Inpbuff.size()))
+						{
+							size_left -= *recv_stat;
+							return recv_stat;
+						}
 					}
-					return CHANNEL.Receive(Inpbuff.data(), Inpbuff.size());
+					return {};
 				};
 				if (path_func)
 				{

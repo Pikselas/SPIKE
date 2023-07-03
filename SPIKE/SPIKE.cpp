@@ -26,11 +26,7 @@ int main()
               stream << "RECEIVED::";
               while (auto read_size = req.ReadBody(buff))
               {
-                  stream << std::string_view(buff.data(), *read_size);
-                  auto str = stream.str();
-                  OutputDebugStringA(str.c_str());
-                  if (str.find("\r\n\r\n") != std::string::npos)
-					  break;
+                stream << std::string_view(buff.data(), *read_size);
 			  }
               res.SendString(stream.str());
           }
