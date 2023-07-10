@@ -37,7 +37,7 @@ public:
 		std::stringstream stream;
 		for (const auto& key_val : hashmap)
 		{
-			stream << key_val.first << ':' << key_val.second << ";\r\n";
+			stream << key_val.first << ':' << key_val.second << "\r\n";
 		}
 		return stream.str();
 	}
