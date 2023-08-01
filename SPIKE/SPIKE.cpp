@@ -8,29 +8,18 @@ int main()
     try
     {
       HttpServer server("3456");
-      server.OnPath("/", [](Request& req, Response& res) {
-
-          res.SendFile(R"(D:\l\retro.jpg)");
-
-          });
-      server.OnPath("/test", [](Request& req, Response& res) {
+      
+      server.OnPath("/test_view", [](Request& req, Response& res) {
           
-          if (req.METHOD == "GET")
-          {
-			  res.SendString("Hello World!");
-		  }
-          else if (req.METHOD == "POST")
-          {
-			  std::vector<char> buff(100);
-              std::stringstream stream;
-              stream << "RECEIVED::";
-              while (auto read_size = req.ReadBody(buff))
-              {
-                stream << std::string_view(buff.data(), *read_size);
-			  }
-              res.SendString(stream.str());
-          }
+          res.SendFile("D:/CoderWallp/204.jpg");
+          
           });
+
+      server.OnPath("/test_view/<...>"_pattern, [](Request& req, Response& res)
+      {
+          res.SendFile("D:/CoderWallp/" + (*req.PATH_DATA)[0]);
+      });
+
       server.Serve();
     }
     catch (const Exception& e)

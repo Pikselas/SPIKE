@@ -16,7 +16,23 @@ public:
 public:
 	const HttpHeaders HEADERS;
 public:
-	Request(const std::string& path , const std::string& method , const HttpHeaders& headers , const unsigned int body_size = 0) : PATH(path) , METHOD(method) , HEADERS(headers) , BODY_SIZE(body_size) {}
+	using PATH_DATA_T = std::vector<std::string>;
+	const std::optional<const PATH_DATA_T> PATH_DATA;
+public:
+	Request
+	(
+		const std::string& path , 
+		const std::string& method , 
+		const HttpHeaders& headers , 
+		const unsigned int body_size = 0 , 
+		const std::optional<PATH_DATA_T> path_data = std::nullopt
+	) : 
+	PATH(path) ,
+	METHOD(method) , 
+	HEADERS(headers) ,
+	PATH_DATA(path_data) ,
+	BODY_SIZE(body_size) 
+	{}
 public:
 	std::optional<unsigned int> ReadBody(std::span<char> buff)
 	{

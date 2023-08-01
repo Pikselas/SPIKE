@@ -31,6 +31,6 @@ public:
 	}
 	unsigned int Length() const
 	{
-		return what_buffer.length();
+		return static_cast<unsigned int>(what_buffer.length());
 	}
 };

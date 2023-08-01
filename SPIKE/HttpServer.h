@@ -2,23 +2,25 @@
 #include<vector>
 #include<thread>
 #include<unordered_map>
-#include<array>
 #include"NetworkServer.h"
 #include"HeadParser.h"
 #include"Request.h"
 #include"Response.h"
+#include"PathPattern.h"
 #include"HttpException.h"
 
 class HttpServer
 {
 	using PATH_FUNCTION_T = std::function<void(Request&, Response&)>;
 	using PATH_FUNCTION_MAP_T = std::unordered_map<std::string , PATH_FUNCTION_T>;
+	using PATH_FUNCTION_PATTERN_T = std::vector<std::pair<const PathPattern, PATH_FUNCTION_T>>;
 public:
 	constexpr static float VERSION = 1.1f;
 private:
 	NetworkServer SERVER;
 private:
 	PATH_FUNCTION_MAP_T PATH_FUNCTIONS;
+	PATH_FUNCTION_PATTERN_T PATH_FUNCTION_PATTERNS;
 private:
 	class Handler
 	{
@@ -26,7 +28,7 @@ private:
 		NetworkChannel CHANNEL;
 	public:
 		Handler(NetworkChannel&& chan) : CHANNEL(std::move(chan)){}
-		void operator()(const PATH_FUNCTION_MAP_T& func_map)
+		void operator()(const PATH_FUNCTION_MAP_T& func_map , const PATH_FUNCTION_PATTERN_T& func_list)
 		{
 			try
 			{
@@ -38,6 +40,7 @@ private:
 				std::unique_ptr<Request> request;
 				std::unique_ptr<Response> response;
 				std::span<char> body_span;
+				std::optional<Request::PATH_DATA_T> path_data;
 				while (auto recv_stat = CHANNEL.Receive(raw_point, 100))
 				{
 
@@ -54,12 +57,23 @@ private:
 						{
 							path_func = res->second;
 						}
+						else
+						{
+							for (auto& [pattern, func] : func_list)
+							{
+								if (path_data = (pattern == hp.getPath()))
+								{
+									path_func = func;
+									break;
+								}
+							}
+						}
 						unsigned int size = 0;
 						if (auto sz = hp.getHeaders().Get("Content-Length"))
 						{
 							size = std::stoi(*sz);
 						}
-						request = std::make_unique<Request>(hp.getPath(), hp.getRequestMethod(), hp.getHeaders() , size);
+						request = std::make_unique<Request>(hp.getPath(), hp.getRequestMethod(), hp.getHeaders() , size , path_data);
 						response = std::make_unique<Response>();
 						response->Body = std::make_unique<OutStream>();
 						break;
@@ -136,11 +150,25 @@ public:
 	{
 		PATH_FUNCTIONS[path] = func;
 	}
+	void OnPath(const PathPattern& pattern , PATH_FUNCTION_T func)
+	{
+		PATH_FUNCTION_PATTERNS.emplace_back(pattern, func);
+	}
 	void Serve()
 	{
 		while (true)
 		{
-			std::thread(Handler{ SERVER.GetChannel() }, std::ref(PATH_FUNCTIONS)).detach();
+			std::thread
+			(
+				Handler
+				{ 
+					SERVER.GetChannel() 
+				}, 
+				
+				std::cref(PATH_FUNCTIONS) , 
+				std::cref(PATH_FUNCTION_PATTERNS)
+			)
+			.detach();
 		}
 	}
 };
