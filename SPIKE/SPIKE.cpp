@@ -12,12 +12,14 @@ int main()
       server.OnPath("/test_view", [](Request& req, Response& res) {
           
           res.SendFile("D:/CoderWallp/204.jpg");
+          std::cout << *req.HEADERS.Get("User-Agent") << std::endl;
           
           });
 
       server.OnPath("/test_view/<...>"_pattern, [](Request& req, Response& res)
       {
           res.SendFile("D:/CoderWallp/" + (*req.PATH_DATA)[0]);
+       
       });
 
       server.Serve();

@@ -21,10 +21,25 @@ public:
 		PATH = FirstComponents[1];
 		//rest of the lines are headers
 		//Vector.erase(Vector.begin());
-		for (auto& line : Vector | std::ranges::views::drop(0))
+		for (auto& line : Vector | std::ranges::views::drop(1))
 		{
 			auto splitted = p_t::split_by_delms(line.begin(), line.end(), ":");
-			headers.Set(p_t::trim(splitted.front()), p_t::trim(splitted.back()));
+			std::string value;
+			if (splitted.size() > 2)
+			{
+				// Merge all the components after the first one
+				for (auto& component : splitted | std::ranges::views::drop(1))
+				{
+					value += ":" + component;
+				}
+				// Remove the first colon
+				value.erase(value.begin());
+			}
+			else
+			{
+				value = splitted.back();
+			}
+			headers.Set(p_t::trim(splitted.front()), p_t::trim(value));
 		}
 	}
 	const HttpHeaders& getHeaders()
