@@ -83,5 +83,8 @@
     <ClInclude Include="PathPattern.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CustomOutStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

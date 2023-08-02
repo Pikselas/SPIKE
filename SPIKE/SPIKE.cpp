@@ -22,6 +22,28 @@ int main()
        
       });
 
+      server.OnPath("/custom", [](auto& req, auto& res)
+          {
+                 res.SendRaw
+                 (
+                 [
+                  fl = std::make_shared<std::ifstream>("D:/Virgin's First Love.mp4", std::ios::binary)
+                 ]
+                 (
+                    std::span<char> buffer
+                 ) mutable -> std::optional<unsigned int>
+                {
+
+                    if (fl->eof())
+				    {
+					    return std::nullopt;
+				    }
+                    return fl->read(std::data(buffer), std::size(buffer)).gcount();
+
+                });
+
+          });
+
       server.Serve();
     }
     catch (const Exception& e)

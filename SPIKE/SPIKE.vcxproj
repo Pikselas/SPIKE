@@ -137,6 +137,7 @@
     <ClCompile Include="SPIKE.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CustomOutStream.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="HeadParser.h" />
     <ClInclude Include="HttpException.h" />

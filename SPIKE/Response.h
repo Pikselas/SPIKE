@@ -5,6 +5,7 @@
 #include"OutStringStream.h"
 #include"OutFileStream.h"
 #include"OutRawStream.h"
+#include"CustomOutStream.h"
 
 class Response
 {
@@ -32,6 +33,13 @@ public:
 		locker.Lock(cp);
 		HEADERS.Set("Contet-Length", std::to_string(raw.size()));
 		Body = std::make_unique<OutRawStream>(raw);
+	}
+	void SendRaw(std::function<std::optional<unsigned int>(std::span<char>)> read_func, std::optional<size_t> max_length = std::nullopt, std::source_location cp = std::source_location::current())
+	{
+		locker.Lock(cp);
+		Body = std::make_unique<CustomOutStream>(std::move(read_func));
+		if (max_length)
+			HEADERS.Set("Content-Length", std::to_string(max_length.value()));
 	}
 	void SendString(const std::string& str , std::source_location cp = std::source_location::current())
 	{
