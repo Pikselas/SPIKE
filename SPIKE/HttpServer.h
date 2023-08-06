@@ -1,28 +1,19 @@
 #pragma once
-#include<vector>
 #include<thread>
-#include<unordered_map>
-#include"NetworkServer.h"
-#include"HeadParser.h"
 #include"Request.h"
 #include"Response.h"
-#include"PathPattern.h"
-#include"HttpException.h"
-
+#include"HeadParser.h"
 #include "HttpRoute.h"
+#include"NetworkServer.h"
+#include"HttpException.h"
 
 class HttpServer
 {
 	using PATH_FUNCTION_T = std::function<void(Request&, Response&)>;
-	using PATH_FUNCTION_MAP_T = std::unordered_map<std::string , PATH_FUNCTION_T>;
-	using PATH_FUNCTION_PATTERN_T = std::vector<std::pair<const PathPattern, PATH_FUNCTION_T>>;
 public:
 	constexpr static float VERSION = 1.1f;
 private:
 	NetworkServer SERVER;
-private:
-	PATH_FUNCTION_MAP_T PATH_FUNCTIONS;
-	PATH_FUNCTION_PATTERN_T PATH_FUNCTION_PATTERNS;
 private:
 	std::shared_ptr<HttpRoute> HOME_ROUTE;
 private:
@@ -32,7 +23,7 @@ private:
 		NetworkChannel CHANNEL;
 	public:
 		Handler(NetworkChannel&& chan) : CHANNEL(std::move(chan)){}
-		void operator()(const PATH_FUNCTION_MAP_T& func_map , const PATH_FUNCTION_PATTERN_T& func_list , std::shared_ptr<HttpRoute> HOME_ROUTE)
+		void operator()(std::shared_ptr<HttpRoute> HOME_ROUTE)
 		{
 			try
 			{
@@ -146,17 +137,13 @@ private:
 	};
 public:
 	HttpServer(const std::string& port) : SERVER(port) , HOME_ROUTE(std::make_shared<HttpRoute>(nullptr)) {}
-	void OnPath(const std::string& path , PATH_FUNCTION_T func)
+	std::shared_ptr<HttpRoute> OnPath(const std::string& path , PATH_FUNCTION_T func)
 	{
-		PATH_FUNCTIONS[path] = func;
+		return HOME_ROUTE->addRelativeChildRoutes(path , func);
 	}
-	void OnPath(const PathPattern& pattern , PATH_FUNCTION_T func)
+	std::shared_ptr<HttpRoute> GetHomeRoute()
 	{
-		PATH_FUNCTION_PATTERNS.emplace_back(pattern, func);
-	}
-	void TempPath(const std::string& path , PATH_FUNCTION_T func)
-	{
-		HOME_ROUTE->addRelativeChildRoutes(path, func);
+		return HOME_ROUTE;
 	}
 	void Serve()
 	{
@@ -168,9 +155,6 @@ public:
 				{ 
 					SERVER.GetChannel() 
 				}, 
-				
-				std::cref(PATH_FUNCTIONS) , 
-				std::cref(PATH_FUNCTION_PATTERNS) ,
 				std::cref(HOME_ROUTE)
 			)
 			.detach();
