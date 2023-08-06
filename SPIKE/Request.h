@@ -17,7 +17,7 @@ public:
 	const HttpHeaders HEADERS;
 public:
 	using PATH_DATA_T = std::vector<std::string>;
-	const std::optional<const PATH_DATA_T> PATH_DATA;
+	const PATH_DATA_T PATH_DATA;
 public:
 	Request
 	(
@@ -25,7 +25,7 @@ public:
 		const std::string& method , 
 		const HttpHeaders& headers , 
 		const unsigned int body_size = 0 , 
-		const std::optional<PATH_DATA_T> path_data = std::nullopt
+		const PATH_DATA_T path_data = {}
 	) : 
 	PATH(path) ,
 	METHOD(method) , 

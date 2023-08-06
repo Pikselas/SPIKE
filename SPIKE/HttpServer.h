@@ -44,7 +44,6 @@ private:
 				std::unique_ptr<Request> request;
 				std::unique_ptr<Response> response;
 				std::span<char> body_span;
-				std::optional<Request::PATH_DATA_T> path_data;
 				while (auto recv_stat = CHANNEL.Receive(raw_point, 100))
 				{
 
@@ -60,30 +59,16 @@ private:
 						const auto path = hp.getPath();
 
 						auto route = HOME_ROUTE->getRelativeChildRoute(path);
-						if (route)
-							path_func = route->path_function;
-
-						/*if (auto res = func_map.find(hp.getPath()); res != func_map.end())
+						if (route.first)
 						{
-							path_func = res->second;
+							path_func = route.first->path_function;
 						}
-						else
-						{
-							for (auto& [pattern, func] : func_list)
-							{
-								if (path_data = (pattern == hp.getPath()))
-								{
-									path_func = func;
-									break;
-								}
-							}
-						}*/
 						unsigned int size = 0;
 						if (auto sz = hp.getHeaders().Get("Content-Length"))
 						{
 							size = std::stoi(*sz);
 						}
-						request = std::make_unique<Request>(hp.getPath(), hp.getRequestMethod(), hp.getHeaders() , size , path_data);
+						request = std::make_unique<Request>(hp.getPath(), hp.getRequestMethod(), hp.getHeaders() , size , route.second );
 						response = std::make_unique<Response>();
 						response->Body = std::make_unique<OutStream>();
 						break;
@@ -135,6 +120,11 @@ private:
 				}
 				//empty scope
 				{
+					// completely receive the request
+					std::vector<char> buff(1000);
+					while (request->ReadBody(buff));
+
+					//send the response header
 					std::stringstream stream;
 					stream << "HTTP/" << VERSION << ' ' << static_cast<unsigned int>(response->RESPONSE_CODE) << ' ' << Response::RESPONSE_CODES.at(static_cast<unsigned int>(response->RESPONSE_CODE)) << "\r\n";
 					stream << response->HEADERS.getRaw() << "\r\n";

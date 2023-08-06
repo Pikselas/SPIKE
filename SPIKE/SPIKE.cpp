@@ -13,6 +13,10 @@ int main()
           {
             res.SendString("Hello World");
           });
+      server.TempPath("/<...>/Okiedokie", [](Request& req , Response& res)
+		  {
+			res.SendString("Hello Okiedokie , You sent " + req.PATH_DATA.front());
+		  });
 
       server.Serve();
     }
