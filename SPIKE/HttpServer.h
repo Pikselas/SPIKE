@@ -9,6 +9,8 @@
 #include"PathPattern.h"
 #include"HttpException.h"
 
+#include "HttpRoute.h"
+
 class HttpServer
 {
 	using PATH_FUNCTION_T = std::function<void(Request&, Response&)>;
@@ -22,13 +24,15 @@ private:
 	PATH_FUNCTION_MAP_T PATH_FUNCTIONS;
 	PATH_FUNCTION_PATTERN_T PATH_FUNCTION_PATTERNS;
 private:
+	std::shared_ptr<HttpRoute> HOME_ROUTE;
+private:
 	class Handler
 	{
 	private:
 		NetworkChannel CHANNEL;
 	public:
 		Handler(NetworkChannel&& chan) : CHANNEL(std::move(chan)){}
-		void operator()(const PATH_FUNCTION_MAP_T& func_map , const PATH_FUNCTION_PATTERN_T& func_list)
+		void operator()(const PATH_FUNCTION_MAP_T& func_map , const PATH_FUNCTION_PATTERN_T& func_list , std::shared_ptr<HttpRoute> HOME_ROUTE)
 		{
 			try
 			{
@@ -53,7 +57,13 @@ private:
 
 						body_span = std::span<char>(fnd_pos + END_OF_SECTION.size(), search_pos_end);
 
-						if (auto res = func_map.find(hp.getPath()); res != func_map.end())
+						const auto path = hp.getPath();
+
+						auto route = HOME_ROUTE->getRelativeChildRoute(path);
+						if (route)
+							path_func = route->path_function;
+
+						/*if (auto res = func_map.find(hp.getPath()); res != func_map.end())
 						{
 							path_func = res->second;
 						}
@@ -67,7 +77,7 @@ private:
 									break;
 								}
 							}
-						}
+						}*/
 						unsigned int size = 0;
 						if (auto sz = hp.getHeaders().Get("Content-Length"))
 						{
@@ -145,7 +155,7 @@ private:
 		}
 	};
 public:
-	HttpServer(const std::string& port) : SERVER(port) {}
+	HttpServer(const std::string& port) : SERVER(port) , HOME_ROUTE(std::make_shared<HttpRoute>(nullptr)) {}
 	void OnPath(const std::string& path , PATH_FUNCTION_T func)
 	{
 		PATH_FUNCTIONS[path] = func;
@@ -153,6 +163,10 @@ public:
 	void OnPath(const PathPattern& pattern , PATH_FUNCTION_T func)
 	{
 		PATH_FUNCTION_PATTERNS.emplace_back(pattern, func);
+	}
+	void TempPath(const std::string& path , PATH_FUNCTION_T func)
+	{
+		HOME_ROUTE->addRelativeChildRoutes(path, func);
 	}
 	void Serve()
 	{
@@ -166,7 +180,8 @@ public:
 				}, 
 				
 				std::cref(PATH_FUNCTIONS) , 
-				std::cref(PATH_FUNCTION_PATTERNS)
+				std::cref(PATH_FUNCTION_PATTERNS) ,
+				std::cref(HOME_ROUTE)
 			)
 			.detach();
 		}

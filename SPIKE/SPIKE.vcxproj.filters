@@ -86,5 +86,8 @@
     <ClInclude Include="CustomOutStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HttpRoute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -142,6 +142,7 @@
     <ClInclude Include="HeadParser.h" />
     <ClInclude Include="HttpException.h" />
     <ClInclude Include="HttpHeaders.h" />
+    <ClInclude Include="HttpRoute.h" />
     <ClInclude Include="HttpServer.h" />
     <ClInclude Include="NetworkChannel.h" />
     <ClInclude Include="NetworkException.h" />
