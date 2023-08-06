@@ -9,14 +9,18 @@ int main()
     {
       HttpServer server("3456");
      
-      server.TempPath("/<...>", [](Request& req , Response& res)
-          {
+        server.OnPath("/<...>", [](Request& req , Response& res)
+        {
             res.SendString("Hello World");
-          });
-      server.TempPath("/<...>/Okiedokie", [](Request& req , Response& res)
-		  {
+        }) -> 
+        addRelativeChildRoutes("/Okiedokie", [](Request& req , Response& res)
+		{
 			res.SendString("Hello Okiedokie , You sent " + req.PATH_DATA.front());
-		  });
+        }) ->
+        addRelativeChildRoutes("/<...>/Pokie", [](Request& req, Response& res)
+        {
+            res.SendString("Hello Pokie , You sent " + req.PATH_DATA.back());
+        });
 
       server.Serve();
     }
