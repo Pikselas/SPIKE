@@ -17,7 +17,8 @@ public:
 	enum class RESPONSE_TYPE
 	{
 		OK = 200,
-		NOT_FOUND = 404
+		NOT_FOUND = 404,
+		INTERNAL_ERROR = 500
 	};
 public:
 	RESPONSE_TYPE RESPONSE_CODE = RESPONSE_TYPE::OK;
@@ -55,4 +56,8 @@ public:
 	}
 };
 
-const std::unordered_map<unsigned int, std::string> Response::RESPONSE_CODES = { {200 , "OK"} , {404 , "Not Found"}};
+const std::unordered_map<unsigned int, std::string> Response::RESPONSE_CODES = { 
+	{200 , "OK"} , 
+	{404 , "Not Found"} , 
+	{500 , "Internal Server Error"}
+};

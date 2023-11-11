@@ -100,6 +100,7 @@ private:
 					catch (const HttpException& e)
 					{
 						response->HEADERS.Reset();
+						response->RESPONSE_CODE = Response::RESPONSE_TYPE::INTERNAL_ERROR;
 						response->HEADERS.Set("Content-Length", std::to_string(e.Length()));
 						response->Body = std::make_unique<OutStringStream>(e.what());
 					}
