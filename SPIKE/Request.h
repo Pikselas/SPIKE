@@ -5,7 +5,7 @@
 
 class Request
 {
-	friend class HttpServer;
+	friend class HttpHandler;
 private:
 	std::function<std::optional<unsigned int>(std::span<char> buff)> reader;
 public:

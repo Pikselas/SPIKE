@@ -1,28 +1,36 @@
 #include <iostream>
-#include<span>
-#include<ranges>
-#include"HttpServer.h"
+#include "WebServer.h"
+#include "HttpHandler.h"
 
 int main()
 {
     try
     {
-      HttpServer server("3456");
-     
-        server.OnPath("/<...>", [](Request& req , Response& res)
-        {
-            res.SendString("Hello World");
-        }) -> 
-        addRelativeChildRoutes("/Okiedokie", [](Request& req , Response& res)
-		{
-			res.SendString("Hello Okiedokie , You sent " + req.PATH_DATA.front());
-        }) ->
-        addRelativeChildRoutes("/<...>/Pokie", [](Request& req, Response& res)
-        {
-            res.SendString("Hello Pokie , You sent " + req.PATH_DATA.back());
-        });
+      HttpHandler handler;
 
-      server.Serve();
+      handler.OnPath("/", [](Request& req, Response& res) {
+		  
+	     res.SendString("Hello World");
+	  });
+
+      handler.OnPath("/g.mp4", [](Request& req, Response& res) {
+          
+         res.SendFile(R"(D:\Edgerunner.mp4)");
+
+      });
+
+      handler.OnPath("/greet/<...>", [](Request& req, Response& res) {
+		  
+		 res.SendString("Hello " + req.PATH_DATA[0] + "!!");
+
+	  });
+
+      handler.OnPath("/favicon.ico", [](Request& , Response& res) {
+          
+         res.SendFile("D:/SeqDownLogo.bmp");
+      });
+      WebServer server{ "3456" };
+      server.Serve(handler);
     }
     catch (const Exception& e)
     {

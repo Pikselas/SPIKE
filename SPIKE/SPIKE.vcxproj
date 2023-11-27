@@ -137,15 +137,17 @@
     <ClCompile Include="SPIKE.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AutoThread.h" />
     <ClInclude Include="CustomOutStream.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="HeadParser.h" />
     <ClInclude Include="HttpException.h" />
     <ClInclude Include="HttpHeaders.h" />
     <ClInclude Include="HttpRoute.h" />
-    <ClInclude Include="HttpServer.h" />
+    <ClInclude Include="WebServer.h" />
     <ClInclude Include="NetworkChannel.h" />
     <ClInclude Include="NetworkException.h" />
+    <ClInclude Include="HttpHandler.h" />
     <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="NetworkServer.h" />
     <ClInclude Include="OutFileStream.h" />
@@ -156,6 +158,7 @@
     <ClInclude Include="Request.h" />
     <ClInclude Include="Response.h" />
     <ClInclude Include="ResponseLocker.h" />
+    <ClInclude Include="Xecutor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

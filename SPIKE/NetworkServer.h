@@ -9,5 +9,5 @@ private:
 public:
 	NetworkServer(const std::string& port);
 	[[nodiscard]]
-	NetworkChannel GetChannel();
+	NetworkChannel GetChannel() const;
 };

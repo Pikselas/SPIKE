@@ -29,7 +29,7 @@ NetworkServer::NetworkServer(const std::string& port)
 }
 
 [[nodiscard]]
-NetworkChannel NetworkServer::GetChannel()
+NetworkChannel NetworkServer::GetChannel() const
 {
     auto s = accept(LISTEN_SOCKET, nullptr, nullptr);
     if (s != INVALID_SOCKET)

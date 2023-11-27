@@ -6,6 +6,7 @@
 
 #include "Request.h"
 #include "Response.h"
+#include "ParserTools.h"
 
 class HttpRoute : public std::enable_shared_from_this<HttpRoute>
 {

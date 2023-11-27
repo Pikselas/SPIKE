@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Network">
+      <UniqueIdentifier>{731a075f-3687-4835-a776-7a2104f7f7e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\HTTP">
+      <UniqueIdentifier>{66eee1ed-2f9d-4873-8399-dbb39d331d3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Stream">
+      <UniqueIdentifier>{b1a5f931-ffdb-43df-909e-2393fb86fafe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Thread">
+      <UniqueIdentifier>{638a1be1-d348-4cd1-9358-e953fd4db035}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SPIKE.cpp">
@@ -29,62 +41,71 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NetworkChannel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Exception.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkException.h">
+    <ClInclude Include="WebServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkServer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="NetworkChannel.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkException.h">
+      <Filter>Header Files\Network</Filter>
     </ClInclude>
     <ClInclude Include="NetworkManager.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Network</Filter>
     </ClInclude>
-    <ClInclude Include="HttpServer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HeadParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HttpHeaders.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ParserTools.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Request.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Response.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="NetworkServer.h">
+      <Filter>Header Files\Network</Filter>
     </ClInclude>
     <ClInclude Include="HttpException.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\HTTP</Filter>
     </ClInclude>
-    <ClInclude Include="ResponseLocker.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="HttpHandler.h">
+      <Filter>Header Files\HTTP</Filter>
     </ClInclude>
-    <ClInclude Include="OutStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OutStringStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OutRawStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OutFileStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CustomOutStream.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="HttpHeaders.h">
+      <Filter>Header Files\HTTP</Filter>
     </ClInclude>
     <ClInclude Include="HttpRoute.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\HTTP</Filter>
+    </ClInclude>
+    <ClInclude Include="Request.h">
+      <Filter>Header Files\HTTP</Filter>
+    </ClInclude>
+    <ClInclude Include="Response.h">
+      <Filter>Header Files\HTTP</Filter>
+    </ClInclude>
+    <ClInclude Include="HeadParser.h">
+      <Filter>Header Files\HTTP</Filter>
+    </ClInclude>
+    <ClInclude Include="ParserTools.h">
+      <Filter>Header Files\HTTP</Filter>
+    </ClInclude>
+    <ClInclude Include="OutRawStream.h">
+      <Filter>Header Files\Stream</Filter>
+    </ClInclude>
+    <ClInclude Include="OutStringStream.h">
+      <Filter>Header Files\Stream</Filter>
+    </ClInclude>
+    <ClInclude Include="OutFileStream.h">
+      <Filter>Header Files\Stream</Filter>
+    </ClInclude>
+    <ClInclude Include="OutStream.h">
+      <Filter>Header Files\Stream</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomOutStream.h">
+      <Filter>Header Files\Stream</Filter>
+    </ClInclude>
+    <ClInclude Include="ResponseLocker.h">
+      <Filter>Header Files\HTTP</Filter>
+    </ClInclude>
+    <ClInclude Include="AutoThread.h">
+      <Filter>Header Files\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="Xecutor.h">
+      <Filter>Header Files\Thread</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
