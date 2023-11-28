@@ -29,8 +29,7 @@ int main()
           
          res.SendFile("D:/SeqDownLogo.bmp");
       });
-      WebServer server{ "3456" };
-      server.Serve(handler);
+      WebServer{ "3456" }.Serve(handler);
     }
     catch (const Exception& e)
     {

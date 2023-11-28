@@ -12,14 +12,15 @@ class Xecutor
     private:
         std::chrono::milliseconds timeout;
     public:
-        void execute(std::function<void()> func);
+        //void execute(std::function<void()> func);
+        void execute(std::move_only_function<void()> func);
     public:
         Xecutor(std::chrono::milliseconds timeout = std::chrono::milliseconds(1000));
 };
 
 Xecutor::Xecutor(std::chrono::milliseconds timeout) : timeout(timeout)  {}
 
-void Xecutor::execute(std::function<void()> func)
+void Xecutor::execute(std::move_only_function<void()> func)
 {
     std::lock_guard<std::mutex> lock_(mtx);
     
@@ -36,13 +37,14 @@ void Xecutor::execute(std::function<void()> func)
         });
     }
 
+    func();
     // get the first thread in the pool
     AutoThread thread = threads.front();
     threads.pop_front();
 
     // set the given task along with a callback 
     // to put the thread back to the pool
-    thread.setTask([=]()
+    thread.setTask(std::move([func = std::move(func) , this , thread]() mutable
     {
         func();
 
@@ -50,7 +52,12 @@ void Xecutor::execute(std::function<void()> func)
         // so that other threads can die if they are not used for a long time
         std::lock_guard<std::mutex> lock(mtx);
         threads.emplace_front(thread);
-    });
+    }));
 
     notifier.notify_one();
 }
+
+/*void Xecutor::execute(std::function<void()> func)
+{
+	execute(std::move(func));
+}*/

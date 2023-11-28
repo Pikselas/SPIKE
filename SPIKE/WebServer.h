@@ -17,9 +17,9 @@ public:
 
 		while (true)
 		{
-			xecutor.execute([handler , channel = std::make_shared<NetworkChannel>(SERVER.GetChannel())]()
+			xecutor.execute([handler, channel = SERVER.GetChannel()]() mutable
 			{
-				handler(*channel);
+				handler(channel);
 			});
 		}
 	}

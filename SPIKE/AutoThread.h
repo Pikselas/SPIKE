@@ -10,7 +10,7 @@ class AutoThread
         struct shared_thread_data
         {
             bool signal_run;
-            std::function<void()> task;
+            std::move_only_function<void()> task;
             std::condition_variable& notifier;
             std::function<void()> expire_callback;
             
@@ -21,7 +21,7 @@ class AutoThread
     public:
         AutoThread(std::condition_variable& notifier , std::chrono::milliseconds timeout);
     public:
-        void setTask(std::function<void()> task);
+        void setTask(std::move_only_function<void()> task);
         void setExpireCallback(std::function<void()> callback);
 
 };
@@ -45,10 +45,10 @@ AutoThread::AutoThread(std::condition_variable& notifier , std::chrono::millisec
     }).detach();
 }
 
-void AutoThread::setTask(std::function<void()> task)
+void AutoThread::setTask(std::move_only_function<void()> task)
 {
-    shared_data->task = task;
-    shared_data->signal_run = true;
+	shared_data->task = std::move(task);
+	shared_data->signal_run = true;
 }
 
 void AutoThread::setExpireCallback(std::function<void()> callback)
