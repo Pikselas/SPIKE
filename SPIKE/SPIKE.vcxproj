@@ -154,7 +154,6 @@
     <ClInclude Include="OutRawStream.h" />
     <ClInclude Include="OutStream.h" />
     <ClInclude Include="OutStringStream.h" />
-    <ClInclude Include="ParserTools.h" />
     <ClInclude Include="Request.h" />
     <ClInclude Include="Response.h" />
     <ClInclude Include="ResponseLocker.h" />

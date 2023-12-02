@@ -8,9 +8,13 @@ int main()
     {
       HttpHandler handler;
 
-      handler.OnPath("/", [](Request& req, Response& res) {
-		  
-	     res.SendString("Hello World");
+      handler.OnPath("/f", [](Request& req, Response& res) {
+		  std::stringstream ss;
+          for (auto& i : req.HEADERS.getInlineMap())
+          {
+			  ss << i.first << " : " << i.second << "\n";
+          }
+          res.SendString(ss.str());
 	  });
 
       handler.OnPath("/g.mp4", [](Request& req, Response& res) {

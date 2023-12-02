@@ -80,9 +80,6 @@
     <ClInclude Include="HeadParser.h">
       <Filter>Header Files\HTTP</Filter>
     </ClInclude>
-    <ClInclude Include="ParserTools.h">
-      <Filter>Header Files\HTTP</Filter>
-    </ClInclude>
     <ClInclude Include="OutRawStream.h">
       <Filter>Header Files\Stream</Filter>
     </ClInclude>

@@ -1,9 +1,10 @@
 #pragma once
-#include<string>
-#include<algorithm>
-#include<ranges>
-#include"HttpHeaders.h"
-#include"ParserTools.h"
+#include <span>
+#include <string>
+#include <ranges>
+#include <algorithm>
+#include "HttpHeaders.h"
+
 class HeadParser
 {
 private:
@@ -14,34 +15,39 @@ private:
 public:
 	HeadParser(const auto Start,const auto End)
 	{
-		auto Vector = p_t::split_by_delms(Start, End, "\r\n");
-		//first line contains request method and path
-		auto FirstComponents = p_t::split_by_delms(Vector.front().begin(), Vector.front().end(), " ");
-		METHOD = FirstComponents[0];
-		PATH = FirstComponents[1];
-		//rest of the lines are headers
-		//Vector.erase(Vector.begin());
-		for (auto& line : Vector | std::ranges::views::drop(1))
+		Parse(std::span<char>(Start, End));
+	}
+	void Parse(const std::span<char> sp)
+	{
+		auto line_splitted = sp | std::ranges::views::split(std::array{ '\r' , '\n' });
+		
+		// first line conatins path and request method seperated by space
+		auto path_and_method = line_splitted.front() | std::ranges::views::split(' ');
+		METHOD = std::string(path_and_method.front().begin(), path_and_method.front().end());
+		
+		auto path_range = *std::next(path_and_method.begin());
+		PATH = std::string( path_range.begin() , path_range.end() );
+
+		// rest of the lines are headers
+		// split_view does not works with views::drop
+		for (auto header_elem = std::next(line_splitted.begin()) ; header_elem != line_splitted.end() ; header_elem++)
 		{
-			auto splitted = p_t::split_by_delms(line.begin(), line.end(), ":");
-			std::string value;
-			if (splitted.size() > 2)
-			{
-				// Merge all the components after the first one
-				for (auto& component : splitted | std::ranges::views::drop(1))
-				{
-					value += ":" + component;
-				}
-				// Remove the first colon
-				value.erase(value.begin());
-			}
-			else
-			{
-				value = splitted.back();
-			}
-			headers.Set(p_t::trim(splitted.front()), p_t::trim(value));
+			auto pos = std::ranges::search(*header_elem, std::array{ ':' });
+			
+			// trim the key and value
+			auto trim_from_first_key = std::ranges::subrange((*header_elem).begin(), pos.begin()) | std::ranges::views::drop_while(isspace);
+			auto trim_from_last_key = trim_from_first_key | std::views::reverse | std::views::drop_while(isspace) | std::views::reverse;
+			auto header_name = std::string(trim_from_last_key.begin(), trim_from_last_key.end());
+
+			auto trim_from_first_value = std::ranges::subrange(pos.end(), (*header_elem).end()) | std::ranges::views::drop_while(isspace);
+			auto trim_from_last_value = trim_from_first_value | std::views::reverse | std::views::drop_while(isspace) | std::views::reverse;
+
+			auto header_value = std::string(trim_from_last_value.begin(), trim_from_last_value.end());
+
+			headers.Set(header_name, header_value);
 		}
 	}
+
 	const HttpHeaders& getHeaders()
 	{
 		return headers;

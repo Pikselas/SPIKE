@@ -43,21 +43,21 @@ public:
 
 				if (auto fnd_pos = std::search(search_pos_start, search_pos_end, END_OF_SECTION.begin(), END_OF_SECTION.end()); fnd_pos != search_pos_end)
 				{
-					HeadParser hp(buff.begin(), fnd_pos);
+					HeadParser head_parser(buff.begin(), fnd_pos);
 
 					body_span = std::span<char>(fnd_pos + END_OF_SECTION.size(), search_pos_end);
 
-					auto route = HOME_ROUTE->getRelativeChildRoute(hp.getPath());
+					auto route = HOME_ROUTE->getRelativeChildRoute(head_parser.getPath());
 					if (route.first)
 					{
 						path_func = route.first->path_function;
 					}
 					unsigned int size = 0;
-					if (auto sz = hp.getHeaders().Get("Content-Length"))
+					if (auto sz = head_parser.getHeaders().Get("Content-Length"))
 					{
 						size = std::stoi(*sz);
 					}
-					request = std::make_unique<Request>(hp.getPath(), hp.getRequestMethod(), hp.getHeaders(), size, route.second);
+					request = std::make_unique<Request>(head_parser.getPath(), head_parser.getRequestMethod(), head_parser.getHeaders(), size, route.second);
 					response = std::make_unique<Response>();
 					response->Body = std::make_unique<OutStream>();
 					break;
