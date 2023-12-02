@@ -37,7 +37,6 @@ void Xecutor::execute(std::move_only_function<void()> func)
         });
     }
 
-    func();
     // get the first thread in the pool
     AutoThread thread = threads.front();
     threads.pop_front();

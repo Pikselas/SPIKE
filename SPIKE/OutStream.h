@@ -16,7 +16,7 @@ public:
 	{ 
 		return 0; 
 	}
-	STATE State()
+	STATE State() const
 	{
 		return state;
 	}
