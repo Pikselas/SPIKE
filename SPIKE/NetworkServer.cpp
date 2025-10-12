@@ -13,7 +13,8 @@ NetworkServer::NetworkServer(const std::string& port)
     {
         throw NetworkException(RetriveStatus);
     }
-    LISTEN_SOCKET = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    //LISTEN_SOCKET = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+	LISTEN_SOCKET = WSASocketW(res->ai_family, res->ai_socktype, res->ai_protocol, nullptr, 0, WSA_FLAG_OVERLAPPED);
     if (LISTEN_SOCKET != INVALID_SOCKET)
     {
         auto BindResult = bind(LISTEN_SOCKET, res->ai_addr, (int)res->ai_addrlen);
