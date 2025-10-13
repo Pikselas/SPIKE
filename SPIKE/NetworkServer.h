@@ -10,4 +10,5 @@ public:
 	NetworkServer(const std::string& port);
 	[[nodiscard]]
 	NetworkChannel GetChannel() const;
+	std::optional<NetworkChannel> GetChannelNonBlocking() const;
 };

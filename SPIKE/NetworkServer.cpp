@@ -42,3 +42,23 @@ NetworkChannel NetworkServer::GetChannel() const
         throw NetworkException(WSAGetLastError());
     }
 }
+
+std::optional<NetworkChannel> NetworkServer::GetChannelNonBlocking() const
+{
+    WSAPOLLFD poll_fd
+    {
+		.fd = LISTEN_SOCKET,
+		.events = POLLIN,
+		.revents = 0
+    };
+
+    if (auto poll_res = WSAPoll(&poll_fd, 1, 0); poll_res > 0)
+    {
+        if(poll_fd.revents & POLLIN)
+        {
+			return GetChannel();
+		}
+    }
+
+    return std::nullopt;
+}
