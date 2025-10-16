@@ -4,7 +4,13 @@ std::mutex NetworkChannel::_receive_requests_mutex;
 std::list<NetworkChannel::WsaOverlappedCustomDataField> NetworkChannel::_receive_requests;
 
 NetworkChannel::NetworkChannel(SOCKET s) : CONNECTION_SOCKET(s)
-{}
+{
+	_iocp = CreateIoCompletionPort((HANDLE)CONNECTION_SOCKET, NULL, 0, 0);
+	if (_iocp == NULL)
+	{
+		NETWORK_ERROR_IF_FAILED(SOCKET_ERROR);
+	}
+}
 
 NetworkChannel::NetworkChannel(NetworkChannel&& channel) noexcept
 {
@@ -15,12 +21,16 @@ NetworkChannel& NetworkChannel::operator=(NetworkChannel&& channel) noexcept
 {
 	CONNECTION_SOCKET = channel.CONNECTION_SOCKET;
 	channel.CONNECTION_SOCKET = INVALID_SOCKET;
+	_iocp = channel._iocp;
+	channel._iocp = NULL;
 	return *this;
 }
 
 NetworkChannel::~NetworkChannel()
 {
 	Disconnect();
+	if (_iocp)
+		CloseHandle(_iocp);
 }
 
 void NetworkChannel::Send(const char* source, const unsigned int length) const
@@ -46,10 +56,10 @@ void NetworkChannel::CheckReceiveEvents()
 	{
 		DWORD bytes_transferred = 0;
 		LPOVERLAPPED lp_overlapped = &(*itr);
-		if (GetQueuedCompletionStatus(itr->_iocp,&bytes_transferred, &(itr->_key),&lp_overlapped,0) == TRUE)
+		ULONG_PTR key = 0;
+		if (GetQueuedCompletionStatus(itr->_iocp,&bytes_transferred, &key,&lp_overlapped,0) == TRUE)
 		{
 			itr->_callback(bytes_transferred);
-			CloseHandle(itr->_iocp);
 			itr = _receive_requests.erase(itr);
 			continue;
 		}
@@ -59,12 +69,6 @@ void NetworkChannel::CheckReceiveEvents()
 
 void NetworkChannel::RegisterReceiveRequest(NetworkChannel& chan , WsaOverlappedCustomDataField wsa_overlapped_data)
 {
-	wsa_overlapped_data._iocp = CreateIoCompletionPort((HANDLE)chan.CONNECTION_SOCKET, NULL, wsa_overlapped_data._key, 0);
-	if (wsa_overlapped_data._iocp == NULL)
-	{
-		NETWORK_ERROR_IF_FAILED(SOCKET_ERROR);
-	}
-
 	std::lock_guard<std::mutex> lock(_receive_requests_mutex);
 	auto& wsa_data = _receive_requests.emplace_back(std::move(wsa_overlapped_data));
 
@@ -83,6 +87,7 @@ void NetworkChannel::SetReceiveCallback(std::function<void(unsigned int)> cb, ch
 {
 	WsaOverlappedCustomDataField wsa_overlapped_data;
 	ZeroMemory(&wsa_overlapped_data, sizeof(WSAOVERLAPPED));
+	wsa_overlapped_data._iocp = _iocp;
 	wsa_overlapped_data._callback = cb;
 	wsa_overlapped_data._channel = this;
 	wsa_overlapped_data._flag = 0;

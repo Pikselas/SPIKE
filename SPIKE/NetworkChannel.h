@@ -23,6 +23,8 @@ public:
 private:
 	SOCKET CONNECTION_SOCKET;
 private:
+	HANDLE _iocp;
+private:
 	struct WsaOverlappedCustomDataField : public WSAOVERLAPPED
 	{
 		HANDLE _iocp;
