@@ -7,9 +7,11 @@
 #include "Request.h"
 #include "Response.h"
 
+#include "Crotine/Task.hpp"
+
 class HttpRoute : public std::enable_shared_from_this<HttpRoute>
 {
-	using PathFunctionT = std::function<void(Request&, Response&)>;
+	using PathFunctionT = std::function<Crotine::Task<void>(Request&, Response&)>;
 private:
 	std::map<std::string, std::shared_ptr<HttpRoute>> child_routes;
 public:

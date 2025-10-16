@@ -22,19 +22,21 @@ public:
 		return HOME_ROUTE;
 	}
 public:
-	void operator()(NetworkChannel& CHANNEL)
+	struct HttpParsedResult
 	{
-		try
+		HeadParser HEAD;
+		std::vector<char> BODY;
+	};
+	static HttpParsedResult ParseIncomingRequest(NetworkChannel& CHANNEL)
 		{
 			std::string_view END_OF_SECTION = "\r\n\r\n";
 			std::vector<char> buff(100);
 			buff.reserve(1000);
 			auto raw_point = buff.data();
 			auto size_to_skip = 0u;
-			PATH_FUNCTION_T path_func = nullptr;
-			std::unique_ptr<Request> request;
-			std::unique_ptr<Response> response;
+		HttpParsedResult result;
 			std::span<char> body_span;
+
 			while (auto recv_stat = CHANNEL.Receive(raw_point, 100))
 			{
 
@@ -44,38 +46,68 @@ public:
 				if (auto fnd_pos = std::search(search_pos_start, search_pos_end, END_OF_SECTION.begin(), END_OF_SECTION.end()); fnd_pos != search_pos_end)
 				{
 					HeadParser head_parser(buff.begin(), fnd_pos);
+				body_span = std::span<char>(fnd_pos + END_OF_SECTION.size(), search_pos_end);
+				result.HEAD = std::move(head_parser);
+				result.BODY = std::vector<char>(fnd_pos + END_OF_SECTION.size(), search_pos_end);
+				break;
+			}
+			else
+			{
+				buff.resize(buff.size() + 100);
+				size_to_skip += *recv_stat;
+				raw_point = buff.data() + size_to_skip;
+			}
+		}
+		return result;
+	}
+	static void SendResponse(NetworkChannel& CHANNEL , Response& response)
+	{
+		// send the response header
+		std::stringstream stream;
+		stream << "HTTP/" << VERSION << ' ' << static_cast<unsigned int>(response.RESPONSE_CODE) << ' ' << Response::RESPONSE_CODES.at(static_cast<unsigned int>(response.RESPONSE_CODE)) << "\r\n";
+		stream << response.HEADERS.getRaw() << "\r\n";
+		auto str = stream.str();
+		CHANNEL.Send(str.c_str(), str.size());
 
-					body_span = std::span<char>(fnd_pos + END_OF_SECTION.size(), search_pos_end);
+		// send the response body
+		std::vector<char> buffer(50000);
+		while (response.Body->State() != OutStream::STATE::EMPTY)
+		{
+			auto count = response.Body->Read(buffer);
+			CHANNEL.Send(buffer.data(), count);
+		}
+	}
+public:
+	auto handleRequest(NetworkChannel& CHANNEL) -> Crotine::Task<void>
+	{
+		try
+		{
+			PATH_FUNCTION_T path_func = nullptr;
+			std::unique_ptr<Request> request;
+			std::unique_ptr<Response> response;
 
-					auto route = HOME_ROUTE->getRelativeChildRoute(head_parser.getPath());
+			auto parsed_result = ParseIncomingRequest(CHANNEL);
+			auto route = HOME_ROUTE->getRelativeChildRoute(parsed_result.HEAD.getPath());
 					if (route.first)
 					{
 						path_func = route.first->path_function;
 					}
 					unsigned int size = 0;
-					if (auto sz = head_parser.getHeaders().Get("Content-Length"))
+			if (auto sz = parsed_result.HEAD.getHeaders().Get("Content-Length"))
 					{
 						size = std::stoi(*sz);
 					}
-					request = std::make_unique<Request>(head_parser.getPath(), head_parser.getRequestMethod(), head_parser.getHeaders(), size, route.second);
+			request = std::make_unique<Request>(parsed_result.HEAD.getPath(), parsed_result.HEAD.getRequestMethod(), parsed_result.HEAD.getHeaders(), size, route.second);
 					response = std::make_unique<Response>();
 					response->Body = std::make_unique<OutStream>();
-					break;
-				}
-				else
-				{
-					buff.resize(buff.size() + 100);
-					size_to_skip += *recv_stat;
-					raw_point = buff.data() + size_to_skip;
-				}
-			}
+			std::span<char> body_span = parsed_result.BODY;
 			request->reader = [&, size_left = request->BODY_SIZE](std::span<char> Inpbuff) mutable ->std::optional<unsigned int>
 				{
 					if (size_left > 0)
 					{
 						if (body_span.size() > 0)
 						{
-							auto copy_size = min(Inpbuff.size(), body_span.size());
+							auto copy_size = (std::min)(Inpbuff.size(), body_span.size());
 							std::copy_n(body_span.begin(), copy_size, Inpbuff.begin());
 							body_span = body_span.subspan(copy_size);
 							size_left -= copy_size;
@@ -93,7 +125,9 @@ public:
 			{
 				try
 				{
-					path_func(*request, *response);
+					auto& cntx = co_await Crotine::get_Execution_Context{};
+					co_await Crotine::RunTask(cntx, path_func, *request, *response);
+					//path_func(*request, *response);
 				}
 				catch (const HttpException& e)
 				{
@@ -113,24 +147,22 @@ public:
 				// completely receive the request
 				std::vector<char> buff(1000);
 				while (request->ReadBody(buff));
-
-				//send the response header
-				std::stringstream stream;
-				stream << "HTTP/" << VERSION << ' ' << static_cast<unsigned int>(response->RESPONSE_CODE) << ' ' << Response::RESPONSE_CODES.at(static_cast<unsigned int>(response->RESPONSE_CODE)) << "\r\n";
-				stream << response->HEADERS.getRaw() << "\r\n";
-				auto str = stream.str();
-				CHANNEL.Send(str.c_str(), str.size());
 			}
-			std::vector<char> buffer(50000);
-			while (response->Body->State() != OutStream::STATE::EMPTY)
+
+			// send the response
+			SendResponse(CHANNEL, *response);
+			}
+		catch (const NetworkException& e)
 			{
-				auto count = response->Body->Read(buffer);
-				CHANNEL.Send(buffer.data(), count);
+			std::cout << e.what();
 			}
 		}
-		catch (const NetworkException& e)
+	auto operator()(NetworkChannel CHANNEL) -> Crotine::Task<void>
 		{
-			std::cout << e.what();
+		auto coro = handleRequest(CHANNEL);
+		coro.set_execution_ctx(co_await Crotine::get_Execution_Context{});
+		coro.execute_async();
+		co_await coro;
 		}
 	}
 };

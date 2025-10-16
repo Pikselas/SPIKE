@@ -1,5 +1,6 @@
 #pragma once
 #include <span>
+#include <array>
 #include <string>
 #include <ranges>
 #include <algorithm>
@@ -13,6 +14,7 @@ private:
 	std::string PATH;
 	std::string METHOD;
 public:
+	HeadParser() = default;
 	HeadParser(const auto Start,const auto End)
 	{
 		Parse(std::span<char>(Start, End));
