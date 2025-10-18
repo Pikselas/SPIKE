@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,6 +144,7 @@
     <ClInclude Include="HttpException.h" />
     <ClInclude Include="HttpHeaders.h" />
     <ClInclude Include="HttpRoute.h" />
+    <ClInclude Include="NetworkAwaiters.h" />
     <ClInclude Include="WebServer.h" />
     <ClInclude Include="NetworkChannel.h" />
     <ClInclude Include="NetworkException.h" />
@@ -157,6 +158,11 @@
     <ClInclude Include="Request.h" />
     <ClInclude Include="Response.h" />
     <ClInclude Include="ResponseLocker.h" />
+    <ClInclude Include="Websocket.h" />
+    <ClInclude Include="WebsocketAwaiters.h" />
+    <ClInclude Include="WebsocketFrame.h" />
+    <ClInclude Include="WebsocketUtils.h" />
+    <ClInclude Include="WebsocketHandler.h" />
     <ClInclude Include="Xecutor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

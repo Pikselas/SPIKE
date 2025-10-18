@@ -16,6 +16,7 @@ public:
 public:
 	enum class RESPONSE_TYPE
 	{
+		SWITCHING_PROTOCOLS = 101,
 		OK = 200,
 		NOT_FOUND = 404,
 		INTERNAL_ERROR = 500
@@ -57,6 +58,7 @@ public:
 };
 
 const std::unordered_map<unsigned int, std::string> Response::RESPONSE_CODES = { 
+	{101 , "Switching Protocols" },
 	{200 , "OK"} , 
 	{404 , "Not Found"} , 
 	{500 , "Internal Server Error"}

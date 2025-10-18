@@ -31,7 +31,6 @@ private:
 		ULONG_PTR _key;
 		DWORD _flag;
 		WSABUF _buffer;
-		NetworkChannel* _channel;
 		std::function<void(unsigned int)> _callback;
 	};
 private:
@@ -51,5 +50,6 @@ public:
 	std::optional<unsigned int> Receive(char* dest, const unsigned int amount) const;
 	// Registers a new asynchronous receive request. The callback will be called when data is received.
 	// The callback will be called from CheckReceiveEvents function.
-	void SetReceiveCallback(std::function<void(unsigned int)> cb, char* dest, const unsigned int amount);
+	// The callback is only called once and need to call this method again for new receive request
+	void SetSingleReceiveCallback(std::function<void(unsigned int)> cb, char* dest, const unsigned int amount);
 };

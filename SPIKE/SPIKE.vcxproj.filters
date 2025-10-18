@@ -25,6 +25,9 @@
     <Filter Include="Header Files\Thread">
       <UniqueIdentifier>{638a1be1-d348-4cd1-9358-e953fd4db035}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\HTTP\Websocket">
+      <UniqueIdentifier>{d9a56a03-8172-4c0e-aac0-a1f72109144d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SPIKE.cpp">
@@ -103,6 +106,24 @@
     </ClInclude>
     <ClInclude Include="Xecutor.h">
       <Filter>Header Files\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="WebsocketUtils.h">
+      <Filter>Header Files\HTTP\Websocket</Filter>
+    </ClInclude>
+    <ClInclude Include="WebsocketHandler.h">
+      <Filter>Header Files\HTTP\Websocket</Filter>
+    </ClInclude>
+    <ClInclude Include="WebsocketFrame.h">
+      <Filter>Header Files\HTTP\Websocket</Filter>
+    </ClInclude>
+    <ClInclude Include="Websocket.h">
+      <Filter>Header Files\HTTP\Websocket</Filter>
+    </ClInclude>
+    <ClInclude Include="WebsocketAwaiters.h">
+      <Filter>Header Files\HTTP\Websocket</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkAwaiters.h">
+      <Filter>Header Files\Network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

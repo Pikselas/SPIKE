@@ -83,13 +83,12 @@ void NetworkChannel::RegisterReceiveRequest(NetworkChannel& chan , WsaOverlapped
 	}
 }
 
-void NetworkChannel::SetReceiveCallback(std::function<void(unsigned int)> cb, char* dest, const unsigned int amount)
+void NetworkChannel::SetSingleReceiveCallback(std::function<void(unsigned int)> cb, char* dest, const unsigned int amount)
 {
 	WsaOverlappedCustomDataField wsa_overlapped_data;
 	ZeroMemory(&wsa_overlapped_data, sizeof(WSAOVERLAPPED));
 	wsa_overlapped_data._iocp = _iocp;
 	wsa_overlapped_data._callback = cb;
-	wsa_overlapped_data._channel = this;
 	wsa_overlapped_data._flag = 0;
 	wsa_overlapped_data._buffer.buf = dest;
 	wsa_overlapped_data._buffer.len = amount;
