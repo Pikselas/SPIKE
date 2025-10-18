@@ -4,10 +4,15 @@
 #include "HeadParser.h"
 #include "NetworkChannel.h"
 
+#include "Crotine/Task.hpp"
+#include "Crotine/utils/Context.hpp"
+#include "Crotine/utils/Function.hpp"
+
 class HttpHandler
 {
 private:
-	using PATH_FUNCTION_T = std::function<void(Request&, Response&)>;
+	using PATH_FUNCTION_NON_TASK_T = std::function<void(Request&, Response&)>;
+	using PATH_FUNCTION_T = std::function<Crotine::Task<void>(Request&, Response&)>;
 private:
 	constexpr static float VERSION = 1.1;
 private:
@@ -16,6 +21,14 @@ public:
 	std::shared_ptr<HttpRoute> OnPath(const std::string& path, PATH_FUNCTION_T func)
 	{
 		return HOME_ROUTE->addRelativeChildRoutes(path, func);
+	}
+	std::shared_ptr<HttpRoute> OnPath(const std::string& path, PATH_FUNCTION_NON_TASK_T func)
+	{
+		//auto tsk_fun = std::bind_front(Crotine::CreateTask<decltype(func), Request&, Response&>, std::move(func));
+		return HOME_ROUTE->addRelativeChildRoutes(path, [func](Request& req, Response& res) -> Crotine::Task<void>
+		{
+			return Crotine::CreateTask(func ,std::ref(req) , std::ref(res));
+		});
 	}
 	std::shared_ptr<HttpRoute> GetHomeRoute()
 	{
