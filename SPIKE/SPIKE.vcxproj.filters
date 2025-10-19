@@ -42,6 +42,9 @@
     <ClCompile Include="NetworkManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Exception.h">
@@ -123,6 +126,9 @@
       <Filter>Header Files\HTTP\Websocket</Filter>
     </ClInclude>
     <ClInclude Include="NetworkAwaiters.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkClient.h">
       <Filter>Header Files\Network</Filter>
     </ClInclude>
   </ItemGroup>

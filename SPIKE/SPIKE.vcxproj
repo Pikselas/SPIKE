@@ -132,6 +132,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="NetworkChannel.cpp" />
+    <ClCompile Include="NetworkClient.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="NetworkServer.cpp" />
     <ClCompile Include="SPIKE.cpp" />
@@ -145,6 +146,7 @@
     <ClInclude Include="HttpHeaders.h" />
     <ClInclude Include="HttpRoute.h" />
     <ClInclude Include="NetworkAwaiters.h" />
+    <ClInclude Include="NetworkClient.h" />
     <ClInclude Include="WebServer.h" />
     <ClInclude Include="NetworkChannel.h" />
     <ClInclude Include="NetworkException.h" />

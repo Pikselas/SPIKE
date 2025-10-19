@@ -11,6 +11,7 @@
 
 class NetworkChannel
 {
+	friend class NetworkClient;
 	friend class NetworkServer;
 private:
 	NetworkChannel(SOCKET s);
