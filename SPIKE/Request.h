@@ -39,14 +39,12 @@ public:
 	Request(Request&&) noexcept = default;
 	Request& operator=(Request&&) noexcept = default;
 public:
-	std::vector<char> ToBytes() const
+	std::string GetRawHead() const
 	{
 		std::stringstream stream;
 		stream << Method << ' ' << Path << ' ' << Version << "\r\n";
 		stream << Headers.getRaw();
 		stream << "\r\n";
-		auto str = stream.str();
-		// modify the body reader use the StreamClass / OutStreamClass later
-		return std::vector<char>(str.begin(), str.end());
+		return stream.str();
 	}
 };

@@ -16,6 +16,8 @@ class NetworkChannel
 private:
 	NetworkChannel(SOCKET s);
 public:
+	NetworkChannel() = default;
+public:
 	NetworkChannel(const NetworkChannel&) = delete;
 	NetworkChannel(NetworkChannel&& channel) noexcept;
 	NetworkChannel& operator= (const NetworkChannel&) = delete;

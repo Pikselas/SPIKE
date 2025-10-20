@@ -45,6 +45,9 @@
     <ClCompile Include="NetworkClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HttpClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Exception.h">
@@ -130,6 +133,9 @@
     </ClInclude>
     <ClInclude Include="NetworkClient.h">
       <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient.h">
+      <Filter>Header Files\HTTP</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

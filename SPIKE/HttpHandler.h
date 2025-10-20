@@ -89,6 +89,30 @@ public:
 			CHANNEL.Send(buffer.data(), count);
 		}
 	}
+	static auto GetBodyStreamReader(unsigned int size_left, std::span<char> body_span, NetworkChannel& CHANNEL)
+	{
+		auto reader = [body_span, &CHANNEL, size_left](std::span<char> Inpbuff) mutable ->std::optional<unsigned int>
+			{
+				if (size_left > 0)
+				{
+					if (body_span.size() > 0)
+					{
+						auto copy_size = (std::min)(Inpbuff.size(), body_span.size());
+						std::copy_n(body_span.begin(), copy_size, Inpbuff.begin());
+						body_span = body_span.subspan(copy_size);
+						size_left -= copy_size;
+						return static_cast<unsigned int>(copy_size);
+					}
+					if (auto recv_stat = CHANNEL.Receive(Inpbuff.data(), Inpbuff.size()))
+					{
+						size_left -= *recv_stat;
+						return recv_stat;
+					}
+				}
+				return {};
+			};
+		return std::move(reader);
+	}
 public:
 	auto handleRequest(NetworkChannel& CHANNEL) -> Crotine::Task<void>
 	{
@@ -109,30 +133,12 @@ public:
 			{
 				size = std::stoi(*sz);
 			}
+			
 			request = std::move(Request{ parsed_result.HEAD.getPath(), parsed_result.HEAD.getRequestMethod(), parsed_result.HEAD.getHeaders(), route.second });
 			response.Body = std::make_unique<OutStream>();
 			std::span<char> body_span = parsed_result.BODY;
-			auto reader = [&, size_left = size](std::span<char> Inpbuff) mutable ->std::optional<unsigned int>
-				{
-					if (size_left > 0)
-					{
-						if (body_span.size() > 0)
-						{
-							auto copy_size = (std::min)(Inpbuff.size(), body_span.size());
-							std::copy_n(body_span.begin(), copy_size, Inpbuff.begin());
-							body_span = body_span.subspan(copy_size);
-							size_left -= copy_size;
-							return static_cast<unsigned int>(copy_size);
-						}
-						if (auto recv_stat = CHANNEL.Receive(Inpbuff.data(), Inpbuff.size()))
-						{
-							size_left -= *recv_stat;
-							return recv_stat;
-						}
-					}
-					return {};
-				};
-			request.Body = std::make_unique<CustomOutStream>(reader);
+			request.Body = std::make_unique<CustomOutStream>(GetBodyStreamReader(size , body_span , CHANNEL));
+			
 			if (path_func)
 			{
 				try

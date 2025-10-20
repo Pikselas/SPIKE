@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="HttpClient.cpp" />
     <ClCompile Include="NetworkChannel.cpp" />
     <ClCompile Include="NetworkClient.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="CustomOutStream.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="HeadParser.h" />
+    <ClInclude Include="HttpClient.h" />
     <ClInclude Include="HttpException.h" />
     <ClInclude Include="HttpHeaders.h" />
     <ClInclude Include="HttpRoute.h" />
