@@ -137,5 +137,8 @@
     <ClInclude Include="HttpClient.h">
       <Filter>Header Files\HTTP</Filter>
     </ClInclude>
+    <ClInclude Include="WebsocketClient.h">
+      <Filter>Header Files\HTTP\Websocket</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
