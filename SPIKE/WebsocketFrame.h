@@ -117,7 +117,7 @@ public:
         // 6-4 bit is not needed
         frame.opcode = static_cast<WebsocketFrame::OPCODE>(raw_data[0] & 0b00001111); // last 4 bits are masked out using 00001111
 
-        frame.masked = (raw_data[0] & 0b10000000);
+        frame.masked = (raw_data[1] & 0b10000000);
         std::uint64_t payload_len = (raw_data[1] & 0b01111111); // last 7 bits are payload length
         unsigned int offset = 2; // starts from 3rd byte 
 
@@ -144,9 +144,18 @@ public:
             offset += 8; // total 64 bits of payload length
         }
 
-        char masking_key[4] = { raw_data[offset] ,  raw_data[offset + 1] , raw_data[offset + 2] , raw_data[offset + 3] };
+        char masking_key[4] = { 0b0 , 0b0 , 0b0 , 0b0 };
 
-        raw_data = raw_data.subspan(offset + 4, payload_len); // move to payload data
+        if (frame.masked)
+        {
+            masking_key[0] = raw_data[offset];
+            masking_key[1] = raw_data[offset + 1]; 
+            masking_key[2] = raw_data[offset + 2];
+            masking_key[3] = raw_data[offset + 3];
+			offset += 4; // move past masking key
+        }
+
+        raw_data = raw_data.subspan(offset, payload_len); // move to payload data
         frame.payload.resize(payload_len);
 
         for (int i = 0; i < payload_len; ++i)

@@ -31,7 +31,10 @@ public:
 	{
 		CHANNEL.SetSingleReceiveCallback([=](unsigned int amt) 
 		{
-			cb(WebsocketFrame::ConstructFrom(std::span<char>(buffer, amt)));
+			if(amt > 0)
+				cb(WebsocketFrame::ConstructFrom(std::span<char>(buffer, amt)));
+			else
+				cb(WebsocketFrame{});
 		}, buffer, amount);
 	}
 };
