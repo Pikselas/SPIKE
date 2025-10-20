@@ -41,24 +41,23 @@ public:
 		std::vector<char> BODY;
 	};
 	static HttpParsedResult ParseIncomingRequest(NetworkChannel& CHANNEL)
-		{
-			std::string_view END_OF_SECTION = "\r\n\r\n";
-			std::vector<char> buff(100);
-			buff.reserve(1000);
-			auto raw_point = buff.data();
-			auto size_to_skip = 0u;
+	{
+		std::string_view END_OF_SECTION = "\r\n\r\n";
+		std::vector<char> buff(100);
+		buff.reserve(1000);
+		auto raw_point = buff.data();
+		auto size_to_skip = 0u;
 		HttpParsedResult result;
-			std::span<char> body_span;
+		std::span<char> body_span;
 
-			while (auto recv_stat = CHANNEL.Receive(raw_point, 100))
+		while (auto recv_stat = CHANNEL.Receive(raw_point, 100))
+		{
+			auto search_pos_start = buff.begin() + std::clamp((long)size_to_skip - (long)END_OF_SECTION.size(), (long)0, (long)buff.size());
+			auto search_pos_end = buff.begin() + size_to_skip + *recv_stat;
+
+			if (auto fnd_pos = std::search(search_pos_start, search_pos_end, END_OF_SECTION.begin(), END_OF_SECTION.end()); fnd_pos != search_pos_end)
 			{
-
-				auto search_pos_start = buff.begin() + std::clamp((long)size_to_skip - (long)END_OF_SECTION.size(), (long)0, (long)buff.size());
-				auto search_pos_end = buff.begin() + size_to_skip + *recv_stat;
-
-				if (auto fnd_pos = std::search(search_pos_start, search_pos_end, END_OF_SECTION.begin(), END_OF_SECTION.end()); fnd_pos != search_pos_end)
-				{
-					HeadParser head_parser(buff.begin(), fnd_pos);
+				HeadParser head_parser(buff.begin(), fnd_pos);
 				body_span = std::span<char>(fnd_pos + END_OF_SECTION.size(), search_pos_end);
 				result.HEAD = std::move(head_parser);
 				result.BODY = std::vector<char>(fnd_pos + END_OF_SECTION.size(), search_pos_end);
@@ -96,25 +95,24 @@ public:
 		try
 		{
 			PATH_FUNCTION_T path_func = nullptr;
-			std::unique_ptr<Request> request;
-			std::unique_ptr<Response> response;
+			Request request;
+			Response response;
 
 			auto parsed_result = ParseIncomingRequest(CHANNEL);
 			auto route = HOME_ROUTE->getRelativeChildRoute(parsed_result.HEAD.getPath());
-					if (route.first)
-					{
-						path_func = route.first->path_function;
-					}
-					unsigned int size = 0;
+			if (route.first)
+			{
+				path_func = route.first->path_function;
+			}
+			unsigned int size = 0;
 			if (auto sz = parsed_result.HEAD.getHeaders().Get("Content-Length"))
-					{
-						size = std::stoi(*sz);
-					}
-			request = std::make_unique<Request>(parsed_result.HEAD.getPath(), parsed_result.HEAD.getRequestMethod(), parsed_result.HEAD.getHeaders(), size, route.second);
-					response = std::make_unique<Response>();
-					response->Body = std::make_unique<OutStream>();
+			{
+				size = std::stoi(*sz);
+			}
+			request = std::move(Request{ parsed_result.HEAD.getPath(), parsed_result.HEAD.getRequestMethod(), parsed_result.HEAD.getHeaders(), route.second });
+			response.Body = std::make_unique<OutStream>();
 			std::span<char> body_span = parsed_result.BODY;
-			request->reader = [&, size_left = request->BODY_SIZE](std::span<char> Inpbuff) mutable ->std::optional<unsigned int>
+			auto reader = [&, size_left = size](std::span<char> Inpbuff) mutable ->std::optional<unsigned int>
 				{
 					if (size_left > 0)
 					{
@@ -134,48 +132,56 @@ public:
 					}
 					return {};
 				};
+			request.Body = std::make_unique<CustomOutStream>(reader);
 			if (path_func)
 			{
 				try
 				{
 					auto& cntx = co_await Crotine::get_Execution_Context{};
-					co_await Crotine::RunTask(cntx, path_func, *request, *response);
+					co_await Crotine::RunTask(cntx, path_func, std::ref(request), std::ref(response));
 					//path_func(*request, *response);
 				}
 				catch (const HttpException& e)
 				{
-					response->HEADERS.Reset();
-					response->RESPONSE_CODE = Response::RESPONSE_TYPE::INTERNAL_ERROR;
-					response->HEADERS.Set("Content-Length", std::to_string(e.Length()));
-					response->Body = std::make_unique<OutStringStream>(e.what());
+					response.HEADERS.Reset();
+					response.RESPONSE_CODE = Response::RESPONSE_TYPE::INTERNAL_ERROR;
+					response.HEADERS.Set("Content-Length", std::to_string(e.Length()));
+					response.Body = std::make_unique<OutStringStream>(e.what());
 				}
 			}
 			else
 			{
-				response->RESPONSE_CODE = Response::RESPONSE_TYPE::NOT_FOUND;
-				response->SendString("Not Found");
+				response.RESPONSE_CODE = Response::RESPONSE_TYPE::NOT_FOUND;
+				response.SendString("Not Found");
 			}
 			//empty scope
 			{
 				// completely receive the request
 				std::vector<char> buff(1000);
-				while (request->ReadBody(buff));
+				while (request.Body->Read(buff));
 			}
-
+			
 			// send the response
-			SendResponse(CHANNEL, *response);
-			}
-		catch (const NetworkException& e)
-			{
-			std::cout << e.what();
-			}
+			SendResponse(CHANNEL, response);
 		}
-	auto operator()(NetworkChannel CHANNEL) -> Crotine::Task<void>
+		catch (const NetworkException& e)
 		{
+			std::cout << e.what();
+		}
+	}
+	auto operator()(NetworkChannel CHANNEL) -> Crotine::Task<void>
+	{
 		auto coro = handleRequest(CHANNEL);
 		coro.set_execution_ctx(co_await Crotine::get_Execution_Context{});
 		coro.execute_async();
 		co_await coro;
-		}
+	}
+
+	auto operator()(std::reference_wrapper<NetworkChannel> CHANNEL) -> Crotine::Task<void>
+	{
+		auto coro = handleRequest(CHANNEL);
+		coro.set_execution_ctx(co_await Crotine::get_Execution_Context{});
+		coro.execute_async();
+		co_await coro;
 	}
 };

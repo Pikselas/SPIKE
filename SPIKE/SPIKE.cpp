@@ -1,38 +1,68 @@
 #include <iostream>
 #include "WebServer.h"
 #include "HttpHandler.h"
+#include "WebsocketHandler.h"
+
+#include "NetworkClient.h"
 
 int main()
 {
     try
     {
       HttpHandler handler;
-
-      handler.OnPath("/f", [](Request& req, Response& res) {
-		  std::stringstream ss;
-          for (auto& i : req.HEADERS.getInlineMap())
+      handler.OnPath("/", [](Request& req, Response& res) 
           {
-			  ss << i.first << " : " << i.second << "\n";
-          }
-          res.SendString(ss.str());
-	  });
+              auto h = req.Headers.getRaw();
+              res.SendString(h);
+          });
+      
+      WebsocketHandler wHandler;
 
-      handler.OnPath("/g.mp4", [](Request& req, Response& res) {
-          
-         res.SendFile(R"(D:\Edgerunner.mp4)");
+      wHandler.onUpgrade = [&](Websocket socket) -> Crotine::Task<void>
+          {
+              std::thread([&]() 
+              {
+                std::string ss;
+                while (true)
+                {
+                    std::cin >> ss;
+                    socket.Send(ss);
+                }
+              }).detach();
+              while (true)
+              {
+                  auto frame = co_await await_Receive_Websocket_Frame{ socket };
+                  if (frame.getOpcode() == WebsocketFrame::OPCODE::TEXT)
+                  {
+                      std::cout << std::string_view(frame.getPayload());
+                  }
+                  else if (frame.getOpcode() == WebsocketFrame::OPCODE::PING)
+                  {
+                      socket.Send(WebsocketFrame::ConstructPongFrame(frame.getPayload()));
+                  }
+                  else if (frame.getOpcode() == WebsocketFrame::OPCODE::CLOSE)
+                  {
 
-      });
+                  }
+              }
+          };
+      std::thread{ []() 
+          {
+              std::cout
+				  << "Client started\n";
+              std::string msg;
+			  std::cin >> msg;
+              NetworkClient client("127.0.0.1", "3456");
+			  auto chan = client.GetChannel();
+			  chan.Send(msg.data(), msg.size());
+          } }.detach();
+      /*WebServer{ "3456" }.Serve([](NetworkChannel chan) -> Crotine::Task<void>
+          {
+			  std::vector<char> buffer(1024);
+			  auto amt = co_await await_Receive_Channel_Data{ chan, buffer.data(), (UINT)buffer.size() };
+			  std::cout << std::string_view(buffer.data(), amt);
+          });*/
 
-      handler.OnPath("/greet/<...>", [](Request& req, Response& res) {
-		  
-		 res.SendString("Hello " + req.PATH_DATA[0] + "!!");
-
-	  });
-
-      handler.OnPath("/favicon.ico", [](Request& , Response& res) {
-          
-         res.SendFile("D:/SeqDownLogo.bmp");
-      });
       WebServer{ "3456" }.Serve(handler);
     }
     catch (const Exception& e)

@@ -1,41 +1,52 @@
 #pragma once
-#include<span>
-#include<functional>
-#include"HttpHeaders.h"
+#include <span>
+#include <functional>
+#include "OutStream.h"
+#include "HttpHeaders.h"
 
 class Request
 {
 	friend class HttpHandler;
 private:
-	std::function<std::optional<unsigned int>(std::span<char> buff)> reader;
+	std::string Version = "HTTP/1.1";
 public:
-	const std::string PATH;
-	const std::string METHOD;
+	std::string Path;
+	std::string Method;
 public:
-	const unsigned int BODY_SIZE = 0;
+	std::unique_ptr<OutStream> Body;
 public:
-	const HttpHeaders HEADERS;
+	HttpHeaders Headers;
 public:
 	using PATH_DATA_T = std::vector<std::string>;
-	const PATH_DATA_T PATH_DATA;
+	PATH_DATA_T PATH_DATA;
 public:
+
+public:
+	Request() = default;
 	Request
 	(
 		const std::string& path , 
 		const std::string& method , 
 		const HttpHeaders& headers , 
-		const unsigned int body_size = 0 , 
 		const PATH_DATA_T path_data = {}
 	) : 
-	PATH(path) ,
-	METHOD(method) , 
-	HEADERS(headers) ,
-	PATH_DATA(path_data) ,
-	BODY_SIZE(body_size) 
+	Path(path) ,
+	Method(method) , 
+	Headers(headers) ,
+	PATH_DATA(path_data) 
 	{}
 public:
-	std::optional<unsigned int> ReadBody(std::span<char> buff)
+	Request(Request&&) noexcept = default;
+	Request& operator=(Request&&) noexcept = default;
+public:
+	std::vector<char> ToBytes() const
 	{
-		return reader(buff);
+		std::stringstream stream;
+		stream << Method << ' ' << Path << ' ' << Version << "\r\n";
+		stream << Headers.getRaw();
+		stream << "\r\n";
+		auto str = stream.str();
+		// modify the body reader use the StreamClass / OutStreamClass later
+		return std::vector<char>(str.begin(), str.end());
 	}
 };
