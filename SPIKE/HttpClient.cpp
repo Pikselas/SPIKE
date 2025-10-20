@@ -14,9 +14,14 @@ Response HttpClient::Get(const std::string & path)
 
 Response HttpClient::DoRequest(const Request& req)
 {
+	return MakeRequest(req, netClient.GetChannel());
+}
+
+Response HttpClient::create_base_response(const Request& req, std::shared_ptr<buffer_reader_context> reader_context)
+{
 	Response res;
 	auto raw_head = req.GetRawHead();
-	auto chan = netClient.GetChannel();
+	auto& chan = reader_context->getChannel();
 	chan.Send(raw_head.c_str(), (unsigned int)raw_head.size());
 	while (req.Body && req.Body->State() != OutStream::STATE::EMPTY)
 	{
@@ -40,19 +45,9 @@ Response HttpClient::DoRequest(const Request& req)
 			auto body_buff_start = header_End_Pos + head_end.size();
 			auto body_buff_end = buffer.begin() + *amt;
 
-			struct buffer_reader_context
-			{
-				std::vector<char> body_buffer;
-				NetworkChannel chan;
-			};
-
-			auto reader_context = std::make_shared<buffer_reader_context>();
 			reader_context->body_buffer = std::vector<char>(body_buff_start, body_buff_end);
-			reader_context->chan = std::move(chan);
-
-			auto reader = HttpHandler::GetBodyStreamReader(std::stoul(*content_length_opt), reader_context->body_buffer , reader_context->chan);
-
-			auto reader_wrapper = [reader_context , reader](std::span<char> buff) mutable
+			auto reader = HttpHandler::GetBodyStreamReader(std::stoul(*content_length_opt), reader_context->body_buffer, reader_context->getChannel());
+			auto reader_wrapper = [reader_context, reader](std::span<char> buff) mutable
 				{
 					return reader(buff);
 				};
@@ -65,4 +60,17 @@ Response HttpClient::DoRequest(const Request& req)
 	}
 
 	return res;
+}
+
+Response HttpClient::MakeRequest(const Request& req, NetworkChannel&& chan)
+{
+	auto reader_context = std::make_shared<bufer_reader_context_owning>();
+	reader_context->chan = std::move(chan);
+	return create_base_response(req, reader_context);
+}
+
+Response HttpClient::MakeRequest(const Request& req, NetworkChannel& chan)
+{
+	auto reader_context = std::make_shared<bufer_reader_context_ref>(chan);
+	return create_base_response(req, reader_context);
 }
