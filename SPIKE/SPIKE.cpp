@@ -4,6 +4,7 @@
 #include "WebsocketHandler.h"
 
 #include "HttpClient.h"
+#include "WebsocketClient.h"
 
 int main()
 {
@@ -54,15 +55,10 @@ int main()
 			  std::cin >> msg;
 
 			  NetworkClient net_client{ "127.0.0.1" , "3456" };
-              HttpClient http_client(net_client);
-			  auto response = http_client.Get("/");
-
-              while (response.Body->State() != OutStream::STATE::EMPTY)
-              {
-				  std::vector<char> buffer(1024);
-				  auto count = response.Body->Read(buffer);
-				  std::cout << std::string_view(buffer.data(), count);
-              }
+              //HttpClient http_client(net_client);
+			  WebsocketClient ws_client(net_client);
+			  auto ws = ws_client.Connect("/");
+			  ws.Send(msg);
 
           } }.detach();
       /*WebServer{ "3456" }.Serve([](NetworkChannel chan) -> Crotine::Task<void>
@@ -72,7 +68,8 @@ int main()
 			  std::cout << std::string_view(buffer.data(), amt);
           });*/
 
-      WebServer{ "3456" }.Serve(handler);
+
+      WebServer{ "3456" }.Serve(wHandler);
     }
     catch (const Exception& e)
     {
