@@ -5,6 +5,7 @@
 #include <WS2tcpip.h>
 #include <optional>
 #include <functional>
+#include "NetworkManager.h"
 #include "NetworkException.h"
 
 #pragma comment (lib, "Ws2_32.lib")
@@ -13,6 +14,8 @@ class NetworkChannel
 {
 	friend class NetworkClient;
 	friend class NetworkServer;
+private:
+	inline static NetworkManager manager;
 private:
 	NetworkChannel(SOCKET s);
 public:
